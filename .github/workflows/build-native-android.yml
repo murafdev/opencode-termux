@@ -163,6 +163,15 @@ jobs:
             exit 1
           fi
 
+      - name: Upload Bionic renderer library
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: opentui-bionic-${{ env.OPENTUI_VERSION }}
+          path: artifacts/transplant/opentui-bionic/libopentui.so
+          if-no-files-found: warn
+          retention-days: 14
+
       - name: Download and verify locked OpenCode v2 package
         if: ${{ inputs.strategy == 'upstream-transplant' }}
         run: |
