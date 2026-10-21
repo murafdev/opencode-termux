@@ -139,6 +139,7 @@ jobs:
           SO="work/opentui/packages/native/lib/aarch64-linux-android.28/libopentui.so"
           test -f "$SO"
           python3 tools/remap-binary-prefix.py "$SO" "$GITHUB_WORKSPACE" /usr/src
+          cp "$SO" artifacts/transplant/opentui-bionic/libopentui.unstripped.so
           "$LLVM_STRIP" --strip-unneeded "$SO"
           cp "$SO" artifacts/transplant/opentui-bionic/libopentui.so
 
@@ -146,6 +147,8 @@ jobs:
         run: |
           set -euo pipefail
           SO=artifacts/transplant/opentui-bionic/libopentui.so
+          UNSTRIPPED=artifacts/transplant/opentui-bionic/libopentui.unstripped.so
+          test -f "$UNSTRIPPED"
           file "$SO" | grep -q 'ARM aarch64'
           readelf -d "$SO" > work/opentui-needed.txt
           grep -q 'NEEDED.*libc.so' work/opentui-needed.txt
@@ -157,7 +160,7 @@ jobs:
             echo "glibc-only pthread_tryjoin_np import found in Bionic library" >&2
             exit 1
           fi
-          python3 -c 'import sys; sys.path.insert(0,"tools/transplant"); from swap_tui import has_ffi_guard; assert has_ffi_guard(open(sys.argv[1],"rb").read())' "$SO"
+          python3 -c 'import sys; sys.path.insert(0,"tools/transplant"); from swap_tui import has_ffi_guard; assert has_ffi_guard(open(sys.argv[1],"rb").read())' "$UNSTRIPPED"
           if grep -aFq "$GITHUB_WORKSPACE" "$SO"; then
             echo "build workspace path leaked into library" >&2
             exit 1
