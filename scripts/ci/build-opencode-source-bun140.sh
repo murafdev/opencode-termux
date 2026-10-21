@@ -6,12 +6,14 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 : "${OPENCODE_VERSION:?OPENCODE_VERSION must be set}"
-test "$OPENCODE_VERSION" = 2.0.28
 
-readarray -t locked < <(python3 - <<'PY'
+readarray -t locked < <(python3 - "$OPENCODE_VERSION" <<'PY'
 import json
+import sys
+
+version = sys.argv[1]
 lock = json.load(open("tools/supply-chain-lock.json", encoding="utf-8"))
-oc = lock["opencode"]["2.0.28"]
+oc = lock["opencode"][version]
 host = lock["source_build_bun_1_4_0"]
 android = lock["android_bun"]["1.4.0"]
 for value in (oc["commit"], host["linux_x64_archive_sha256"],
@@ -69,10 +71,11 @@ python3 tools/transplant/transplant.py all \
   --ver "$OPENCODE_VERSION" \
   --tgz "work/source-bun140/opencode-$OPENCODE_VERSION-source-bun140.tgz" \
   --no-execve
-python3 - <<'PY'
+python3 - "$OPENCODE_VERSION" <<'PY'
 import json
+import sys
 from pathlib import Path
-out = Path("artifacts/transplant/2.0.28")
+out = Path("artifacts/transplant") / sys.argv[1]
 report = json.loads((out / "report.json").read_text(encoding="utf-8"))
 assert report["steps"]["swap"]["status"] == "ok", report["steps"].get("swap")
 product = out / "opencode-native-tui"

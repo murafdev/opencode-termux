@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-release_tag=v2.0.28
-asset=opencode-2.0.28-android-aarch64-source-bun140
+release_tag=v2.1.2
+asset=opencode-2.1.2-android-aarch64-source-bun140
 archive="$asset.tar.gz"
 base_url="https://github.com/Spectra010s/opencode-termux/releases/download/$release_tag"
 destination="$HOME/.local/bin/opencode"

@@ -15,9 +15,9 @@ permissions:
   contents: read
 
 env:
-  OPENCODE_VERSION: "2.0.28"
-  OPENTUI_VERSION: "0.5.17"
-  OPENTUI_COMMIT: "6f0efd3330978d696b42db3d7d95d2042008312b"
+  OPENCODE_VERSION: "2.1.2"
+  OPENTUI_VERSION: "0.6.6"
+  OPENTUI_COMMIT: "212eb27da4adf5b907031ad153fc6a5b9f713fbf"
   ZIG_VERSION: "0.16.0"
   ANDROID_API: "28"
 
@@ -34,6 +34,9 @@ jobs:
           git fetch --depth=1 origin "$GITHUB_SHA"
           git checkout --detach FETCH_HEAD
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - name: Verify release pins
+        run: python3 tools/check-release-pins.py
 
       - name: Fetch pinned OpenTUI source
         run: |
@@ -95,9 +98,9 @@ jobs:
       - name: Apply version-locked OpenTUI Android hardening
         run: |
           set -euo pipefail
-          python3 tools/patch-opentui-0.5.17.py work/opentui
-          patch --fuzz=0 -d work/opentui -p1 < patches/opentui/v0.5.17-file-prefix-map.patch
-          patch --fuzz=0 -d work/opentui -p1 < patches/opentui/tlsdesc-self-resolver.patch
+          python3 tools/patch-opentui-0.6.6.py work/opentui
+          patch --fuzz=0 -d work/opentui -p1 < patches/opentui/v0.6.6-file-prefix-map.patch
+          patch --fuzz=0 -d work/opentui -p1 < patches/opentui/v0.6.6-tlsdesc-self-resolver.patch
           git -C work/opentui diff --check
 
       - name: Build Bionic OpenTUI library

@@ -19,8 +19,8 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
       SOURCE_RUN: ${{ inputs.source_run }}
-      RELEASE_TAG: "v2.0.28"
-      ASSET: "opencode-2.0.28-android-aarch64-source-bun140"
+      RELEASE_TAG: "v2.1.2"
+      ASSET: "opencode-2.1.2-android-aarch64-source-bun140"
     steps:
       - name: Fetch release workflow commit without broken submodules
         run: |
@@ -49,7 +49,7 @@ jobs:
           set -euo pipefail
           mkdir dist
           gh run download "$SOURCE_RUN" --repo "$GITHUB_REPOSITORY" \
-            --name "opencode-2.0.28-android-aarch64-source-bun140-candidate" --dir dist
+            --name "opencode-2.1.2-android-aarch64-source-bun140-candidate" --dir dist
           (cd dist && sha256sum -c SHA256SUMS)
           test "$(awk -v name="$ASSET" '$2 == name && length($1) == 64 { count++ } END { print count+0 }' dist/SHA256SUMS)" -eq 1
           file "dist/$ASSET" | grep -q 'ARM aarch64'
@@ -72,5 +72,5 @@ jobs:
             dist/transplant-report.json \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
-            --title 'OpenCode 2.0.28 native Termux' \
+            --title 'OpenCode 2.1.2 native Termux' \
             --notes-file RELEASE_NOTES.md

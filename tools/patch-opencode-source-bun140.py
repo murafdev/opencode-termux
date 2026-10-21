@@ -58,7 +58,7 @@ def main() -> None:
         '      if (process.execPath === path.join(global.home, ".local", "bin", "opencode")) {\n'
         '        return yield* Effect.fail(new Error(\n'
         '          "This native Termux build must be upgraded with its verified release installer: " +\n'
-        '          "curl -fsSL https://github.com/Spectra010s/opencode-termux/raw/v2.0.28/install.sh | sh"\n'
+        '          "curl -fsSL https://github.com/Spectra010s/opencode-termux/raw/v2.1.2/install.sh | sh"\n'
         '        ))\n'
         '      }\n'
         '      const updater = yield* Updater.Service\n',
@@ -73,8 +73,10 @@ def main() -> None:
     )
     replace_once(
         uninstall,
+        '    if (removal) log.info(`  Package: ${removal.command.join(" ")}`)\n'
         '    if (method === "curl") log.info(`  Binary (manual removal): ${process.execPath}`)\n'
         '    if (!method) log.warn("Could not detect the installation method. Remove the installation manually after cleanup.")\n',
+        '    if (removal) log.info(`  Package: ${removal.command.join(" ")}`)\n'
         '    if (nativeBinary) log.info(`  Binary: ${process.execPath}`)\n'
         '    else if (method === "curl") log.info(`  Binary (manual removal): ${process.execPath}`)\n'
         '    if (!method && !nativeBinary) log.warn("Could not detect the installation method. Remove the installation manually after cleanup.")\n',

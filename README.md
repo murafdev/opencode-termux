@@ -13,7 +13,7 @@
 In Termux:
 
 ```sh
-curl -fsSL https://github.com/Spectra010s/opencode-termux/raw/v2.0.28/install.sh | sh
+curl -fsSL https://github.com/Spectra010s/opencode-termux/raw/v2.1.2/install.sh | sh
 opencode
 ```
 
@@ -42,7 +42,7 @@ rm -f ~/.local/bin/opencode
 
 ## Build from source
 
-The 2.0.28 release is built from pinned source in GitHub Actions, not uploaded from a maintainer's phone. Follow the [native build guide](docs/native-v2-build.md) to reproduce that build or to use the separate on-device build path for supported versions; the [transplant guide](docs/transplant.md) explains the Bionic runtime and native renderer.
+The 2.1.2 release is built from pinned source in GitHub Actions, not uploaded from a maintainer's phone. Follow the [native build guide](docs/native-v2-build.md) to reproduce that build or to use the separate on-device build path for supported versions; the [transplant guide](docs/transplant.md) explains the Bionic runtime and native renderer.
 
 ## Releases and provenance
 
