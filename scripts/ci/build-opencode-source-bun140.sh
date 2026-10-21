@@ -77,7 +77,8 @@ import sys
 from pathlib import Path
 out = Path("artifacts/transplant") / sys.argv[1]
 report = json.loads((out / "report.json").read_text(encoding="utf-8"))
-assert report["steps"]["swap"]["status"] == "ok", report["steps"].get("swap")
+swap = report["steps"].get("swap")
+assert swap and swap["status"] == "ok", report["steps"].get("tui_probe")
 product = out / "opencode-native-tui"
 assert product.is_file() and product.stat().st_size > 50_000_000
 PY

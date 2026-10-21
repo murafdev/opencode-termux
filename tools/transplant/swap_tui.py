@@ -216,13 +216,51 @@ def is_glibc_linked(lib: bytes) -> bool:
         )
     )
 
+def _exec_ranges(lib: bytes) -> list:
+    """Return [(file offset, size)] for every executable PT_LOAD segment."""
+    if lib[4] != 2:  # EI_CLASS != ELFCLASS64
+        raise ValueError("not ELF64")
+    e_phoff = struct.unpack_from("<Q", lib, 0x20)[0]
+    e_phentsize = struct.unpack_from("<H", lib, 0x36)[0]
+    e_phnum = struct.unpack_from("<H", lib, 0x38)[0]
+    ranges = []
+    for n in range(e_phnum):
+        po = e_phoff + n * e_phentsize
+        p_type = struct.unpack_from("<I", lib, po)[0]
+        p_flags = struct.unpack_from("<I", lib, po + 0x4)[0]
+        if p_type == 1 and p_flags & 1:  # PT_LOAD, PF_X
+            p_offset = struct.unpack_from("<Q", lib, po + 0x8)[0]
+            p_filesz = struct.unpack_from("<Q", lib, po + 0x20)[0]
+            ranges.append((p_offset, p_filesz))
+    return ranges
+
+
+def _count_guard_patterns(lib: bytes, ranges) -> tuple:
+    """Count `mov wN, #0x7fffffff` clamps and saturating-add `csel ..., vs`."""
+    clamp = csel_vs = 0
+    for start, size in ranges:
+        for off in range(start, start + size - 3, 4):
+            w = struct.unpack_from("<I", lib, off)[0]
+            if (w & 0xFFFFFFE0) == 0x12B00000:  # movn wd, #0x8000, lsl #16 => mov wd, #0x7fffffff
+                clamp += 1
+            elif (w & 0xFFE00C00) == 0x1A800000 and ((w >> 12) & 0xF) == 6:  # csel wd,wn,wm,vs
+                csel_vs += 1
+    return clamp, csel_vs
+
+
 def has_ffi_guard(lib: bytes) -> bool:
     """Guard verification (task-tui-common-fix): scan the code ranges of all
     guard-owning symbols for the compiled guard patterns: `mov wN,
     #0x7fffffff` clamps (MOVN #0x8000,LSL#16) + saturating-add `csel ..., vs`.
     An unguarded build has plain adds + b.vs integerOutOfBounds branches in
     those ranges instead. Verified differentially: crashfix v2 .so passes,
-    1.18.27 batch .so fails."""
+    1.18.27 batch .so fails.
+
+    OpenTUI 0.6.6 hides the buffer internals behind the `ot_*` C ABI, so a
+    stripped distribution library has no guard-owner symbols left. Fall back to
+    scanning every executable segment: the patched build carries the clamps and
+    saturating adds in inlined copies, while the unpatched upstream library has
+    no `csel ..., vs` at all (checked against 0.6.6 arm64)."""
     try:
         owners = []
         for name, value, size in _iter_func_syms(lib):
@@ -231,18 +269,25 @@ def has_ffi_guard(lib: bytes) -> bool:
     except ValueError as e:
         print(f"swap_tui: guard check cannot run: {e}", file=sys.stderr)
         return False
-    if not owners:
-        print("swap_tui: guard check cannot run: no guard-owner symbols found", file=sys.stderr)
+    if owners:
+        clamp, csel_vs = _count_guard_patterns(
+            lib, [(start, size) for _, start, size in owners]
+        )
+        print(f"swap_tui: guard scan over {len(owners)} owner symbols: clamp={clamp} csel_vs={csel_vs}")
+        return clamp >= 1 and csel_vs >= 1
+    try:
+        ranges = _exec_ranges(lib)
+    except (struct.error, ValueError) as e:
+        print(f"swap_tui: guard check cannot run: {e}", file=sys.stderr)
         return False
-    clamp = csel_vs = 0
-    for _, start, size in owners:
-        for off in range(start, start + size - 3, 4):
-            w = struct.unpack_from("<I", lib, off)[0]
-            if (w & 0xFFFFFFE0) == 0x12B00000:  # movn wd, #0x8000, lsl #16 => mov wd, #0x7fffffff
-                clamp += 1
-            elif (w & 0xFFE00C00) == 0x1A800000 and ((w >> 12) & 0xF) == 6:  # csel wd,wn,wm,vs
-                csel_vs += 1
-    print(f"swap_tui: guard scan over {len(owners)} owner symbols: clamp={clamp} csel_vs={csel_vs}")
+    if not ranges:
+        print("swap_tui: guard check cannot run: no executable segment", file=sys.stderr)
+        return False
+    clamp, csel_vs = _count_guard_patterns(lib, ranges)
+    print(
+        f"swap_tui: guard scan over {len(ranges)} executable segment(s) "
+        f"(stripped library): clamp={clamp} csel_vs={csel_vs}"
+    )
     return clamp >= 1 and csel_vs >= 1
 
 def main() -> int:
