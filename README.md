@@ -16,10 +16,29 @@ In Termux:
 
 ```sh
 curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.2/install.sh | sh
-opencode
 ```
 
-The installer downloads the [GitHub release](https://github.com/murafdev/opencode-termux/releases) archive, checks both the archive and the extracted binary against the release checksum file, and installs the binary as `~/.local/bin/opencode`. If `~/.local/bin` is not on `PATH`, it prints the direct command and the exact PATH line to add; it does not silently edit your shell startup files.
+The installer downloads the [GitHub release](https://github.com/murafdev/opencode-termux/releases) archive, checks both the archive and the extracted binary against the release checksum file, and installs the binary as `~/.local/bin/opencode`. It does not silently edit your shell startup files.
+
+### Add `opencode` to PATH
+
+If `~/.local/bin` is not already on your `PATH`, add it once. Termux uses Bash by default, so append it to `~/.bashrc`:
+
+```sh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+For other shells: use `~/.zshrc` for Zsh, or run `fish_add_path ~/.local/bin` for Fish.
+
+Verify the installation:
+
+```sh
+command -v opencode
+opencode --version
+```
+
+Expected version: `2.1.2`.
 
 No apt/pacman package for this build has been published by this project.
 

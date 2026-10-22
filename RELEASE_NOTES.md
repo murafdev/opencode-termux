@@ -8,7 +8,16 @@ Install in Termux:
 curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.2/install.sh | sh
 ```
 
-Then run `opencode`. The installer checks both the compressed download and the extracted binary against release checksums before replacing `~/.local/bin/opencode`. It keeps your chats, sign-ins, and configuration. Back up your OpenCode data first if you might need to return to v1, because v2 may migrate the session database.
+If `~/.local/bin` is not already on your `PATH`, add it once and reload your shell:
+
+```sh
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+For Zsh use `~/.zshrc`; for Fish run `fish_add_path ~/.local/bin`. Then run `opencode --version` (expected: `2.1.2`) and `opencode`.
+
+The installer checks both the compressed download and the extracted binary against release checksums before replacing `~/.local/bin/opencode`. It keeps your chats, sign-ins, and configuration. Back up your OpenCode data first if you might need to return to v1, because v2 may migrate the session database.
 
 ## What changed
 
