@@ -20,7 +20,7 @@ new file mode 100644
 index 0000000..9af3bd5
 --- /dev/null
 +++ b/packages/native/src/tlsdesc-shim.c
-@@ -0,0 +1,238 @@
+@@ -0,0 +1,254 @@
 +/* tlsdesc-shim.c ÔÇö self-contained TLSDESC fallback resolver for bionic < 11.
 + *
 + * Context (task-1 adjudication: .omo/evidence/rc6-b2-upx-tui/task-1-jsc.txt):
@@ -80,6 +80,22 @@ index 0000000..9af3bd5
 +#include <string.h>
 +#include <sys/mman.h>
 +#include <unistd.h>
++
++#if defined(__ANDROID__)
++/* Android 11+ tags heap pointers in the top byte (TBI). OpenTUI's JS bridge
++ * converts native pointers to JS numbers and rejects values above
++ * Number.MAX_SAFE_INTEGER, so a tagged allocation aborts TUI startup with
++ * "Pointer exceeds safe integer range". Disable tagging when this library
++ * loads: later allocations are untagged, while older tagged pointers keep
++ * their tags for bionic's free() check. */
++#include <malloc.h>
++#ifndef M_BIONIC_SET_HEAP_TAGGING_LEVEL
++#define M_BIONIC_SET_HEAP_TAGGING_LEVEL (-1)
++#endif
++__attribute__((constructor)) static void opentui_disable_heap_tagging(void) {
++  mallopt(M_BIONIC_SET_HEAP_TAGGING_LEVEL, 0);
++}
++#endif
 +
 +/* Bionic has no glibc pthread_tryjoin_np. OpenTUI uses it only as a
 + * nonblocking completion probe. */
