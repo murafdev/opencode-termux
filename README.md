@@ -1,6 +1,8 @@
 # OpenCode 2 native for Termux
 
-[OpenCode](https://opencode.ai) is an AI-powered terminal coding assistant. This project ships it as a native Android/aarch64 Bionic binary for [Termux](https://termux.dev): no PRoot, no glibc. It has been tested on one Android 14 phone; wider device testing is welcome.
+[OpenCode](https://opencode.ai) is an AI-powered terminal coding assistant. This project ships it as a native Android/aarch64 Bionic binary for [Termux](https://termux.dev): no PRoot, no glibc.
+
+This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux). It publishes the OpenCode **2.1.2** build with OpenTUI 0.6.6, including the Android 11+ heap-pointer-tagging fix. The TUI has been confirmed working on-device; wider device testing is welcome.
 
 ## Requirements
 
@@ -50,10 +52,14 @@ The 2.1.2 release is built from pinned source in GitHub Actions, not uploaded fr
 
 ## Releases and provenance
 
+The current release is [v2.1.2](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.2): OpenCode 2.1.2 on the Android Bun 1.4.0 base with the Bionic OpenTUI 0.6.6 renderer.
+
 The [build workflow](.github/workflows/build-native-android.yml) produces a candidate. After testing, the [release workflow](.github/workflows/publish-native-android.yml) downloads that CI artifact, verifies its hash, and publishes it. [Build inputs](tools/supply-chain-lock.json) are pinned to specific versions, hashes, or commits. Releases are currently manual, not weekly automatic updates.
 
-This project is derived from [Hope2333/opencode-termux](https://github.com/Hope2333/opencode-termux); OpenCode itself is [upstream](https://github.com/anomalyco/opencode). Older docs in this repository describe upstream package lines and may not apply to this release. See [LICENSE](LICENSE) for this repository; dependencies retain their own licenses.
+This project is derived from [Hope2333/opencode-termux](https://github.com/Hope2333/opencode-termux) via [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux); OpenCode itself is [upstream](https://github.com/anomalyco/opencode). Older docs in this repository describe upstream package lines and may not apply to this release. See [LICENSE](LICENSE) for this repository; dependencies retain their own licenses.
 
 ## Maintainer
 
-Adeloye Adetayo ([Spectra010s](https://spectra010s.com/?utm_source=github))
+Upstream project: Adeloye Adetayo ([Spectra010s](https://spectra010s.com/?utm_source=github)).
+
+Fork builds and releases: [@murafdev](https://github.com/murafdev).
