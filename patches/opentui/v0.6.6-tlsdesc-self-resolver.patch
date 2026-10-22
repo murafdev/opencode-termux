@@ -90,7 +90,7 @@ index 0000000..9af3bd5
 + * their tags for bionic's free() check. */
 +#include <malloc.h>
 +#ifndef M_BIONIC_SET_HEAP_TAGGING_LEVEL
-+#define M_BIONIC_SET_HEAP_TAGGING_LEVEL (-1)
++#define M_BIONIC_SET_HEAP_TAGGING_LEVEL (-204)
 +#endif
 +__attribute__((constructor)) static void opentui_disable_heap_tagging(void) {
 +  mallopt(M_BIONIC_SET_HEAP_TAGGING_LEVEL, 0);
