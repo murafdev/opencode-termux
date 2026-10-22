@@ -40,6 +40,25 @@ opencode --version
 
 Expected version: `2.1.2`.
 
+### Shared storage and project files
+
+Installing and running OpenCode needs **no Android storage permission**: the binary, configuration, and sessions live inside Termux's private home directory.
+
+To open projects stored in shared storage (Downloads, Documents, an SD card), grant Termux access once:
+
+```sh
+termux-setup-storage
+```
+
+Approve the Android prompt. On Android 11 and newer you may also need to allow **All files access** for Termux in Android Settings → Apps → Termux → Permissions. The command creates shortcuts under `~/storage`, for example `~/storage/shared` (`/sdcard`) and `~/storage/downloads`:
+
+```sh
+cd ~/storage/shared/Documents/my-project
+opencode
+```
+
+OpenCode writes its own data under `~/.local/share/opencode` and only touches the project files you open. Keeping projects under the Termux home directory (for example `~/projects`) avoids Android scoped-storage restrictions entirely.
+
 No apt/pacman package for this build has been published by this project.
 
 ### Android 11+ pointer tagging

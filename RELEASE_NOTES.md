@@ -17,6 +17,8 @@ source ~/.bashrc
 
 For Zsh use `~/.zshrc`; for Fish run `fish_add_path ~/.local/bin`. Then run `opencode --version` (expected: `2.1.2`) and `opencode`.
 
+Installing and running OpenCode needs no Android storage permission; everything stays in Termux's private home. To open projects in shared storage, run `termux-setup-storage` once and approve the Android prompt (on Android 11+ you may also need **All files access** for Termux), then use paths such as `~/storage/shared/Documents/my-project`.
+
 The installer checks both the compressed download and the extracted binary against release checksums before replacing `~/.local/bin/opencode`. It keeps your chats, sign-ins, and configuration. Back up your OpenCode data first if you might need to return to v1, because v2 may migrate the session database.
 
 ## What changed
