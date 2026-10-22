@@ -17,7 +17,7 @@ Then run `opencode`. The installer checks both the compressed download and the e
 - Bionic heap pointer tagging is disabled when the renderer library loads. Android 11+ tags 64-bit heap pointers in the top byte, and OpenTUI `0.6.6` rejects such addresses with `Pointer exceeds safe integer range`; allocations made after the renderer loads now reach JavaScript untagged.
 - The Termux installer guard for `opencode upgrade` and the native-binary handling in `opencode uninstall` are updated for the 2.1.2 command handlers.
 
-`opencode upgrade` points to this verified installer rather than downloading an incompatible upstream build. `opencode uninstall --dry-run` previews removal; `opencode uninstall` removes this binary and the shared cache after confirmation, but retains user data.
+`opencode upgrade` refuses to download an incompatible upstream build; to update this fork build, run the install command above. `opencode uninstall --dry-run` previews removal; `opencode uninstall` removes this binary and the shared cache after confirmation, but retains user data.
 
 ## Provenance and testing
 
