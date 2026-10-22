@@ -13,13 +13,17 @@
 In Termux:
 
 ```sh
-curl -fsSL https://github.com/Spectra010s/opencode-termux/raw/v2.1.2/install.sh | sh
+curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.2/install.sh | sh
 opencode
 ```
 
-The installer downloads the [GitHub release](https://github.com/Spectra010s/opencode-termux/releases) binary, checks its SHA-256 against the release checksum file, and installs it as `~/.local/bin/opencode`. If `~/.local/bin` is not on `PATH`, it prints the direct command and the exact PATH line to add; it does not silently edit your shell startup files.
+The installer downloads the [GitHub release](https://github.com/murafdev/opencode-termux/releases) archive, checks both the archive and the extracted binary against the release checksum file, and installs the binary as `~/.local/bin/opencode`. If `~/.local/bin` is not on `PATH`, it prints the direct command and the exact PATH line to add; it does not silently edit your shell startup files.
 
 No apt/pacman package for this build has been published by this project.
+
+### Android 11+ pointer tagging
+
+Android 11 and newer tag 64-bit heap pointers in the top byte. OpenTUI `0.6.6` converts native pointers to JavaScript numbers and rejects addresses above `Number.MAX_SAFE_INTEGER`, which aborted TUI startup with `Pointer exceeds safe integer range`. This build's renderer library disables heap tagging as soon as it loads, so the context handle and later allocations reach JavaScript untagged. No wrapper script or extra library is installed.
 
 ## Migrating from v1
 

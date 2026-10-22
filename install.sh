@@ -4,7 +4,7 @@ set -eu
 release_tag=v2.1.2
 asset=opencode-2.1.2-android-aarch64-source-bun140
 archive="$asset.tar.gz"
-base_url="https://github.com/Spectra010s/opencode-termux/releases/download/$release_tag"
+base_url="https://github.com/murafdev/opencode-termux/releases/download/$release_tag"
 destination="$HOME/.local/bin/opencode"
 
 for tool in curl sha256sum tar mktemp install mv uname getprop awk; do
