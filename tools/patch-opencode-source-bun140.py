@@ -21,12 +21,16 @@ def replace_once(path: Path, old: str, new: str) -> None:
 
 def main() -> None:
     if len(sys.argv) != 2:
-        raise SystemExit("usage: patch-opencode-source-bun144.py SOURCE_ROOT")
+        raise SystemExit("usage: patch-opencode-source-bun140.py SOURCE_ROOT")
     root = Path(sys.argv[1])
     package = root / "package.json"
     metadata = json.loads(package.read_text(encoding="utf-8"))
-    if metadata.get("packageManager") != "bun@1.4.4":
-        raise SystemExit(f"unexpected packageManager: {metadata.get('packageManager')!r}")
+    manager = metadata.get("packageManager")
+    # OpenCode 2.1.3 pins bun@1.4.4 upstream. The native Android build uses the
+    # proven 1.4.0 toolchain/base, so accept the upstream pin and rewrite it.
+    if manager not in ("bun@1.4.4", "bun@1.4.2"):
+        raise SystemExit(f"unexpected packageManager: {manager!r}")
+    replace_once(package, f'"packageManager": "{manager}"', '"packageManager": "bun@1.4.0"')
 
     process = root / "packages/cli/src/util/process.ts"
     replace_once(

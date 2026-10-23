@@ -2,12 +2,12 @@
 
 [OpenCode](https://opencode.ai) is an AI-powered terminal coding assistant. This project ships it as a native Android/aarch64 Bionic binary for [Termux](https://termux.dev): no PRoot, no glibc.
 
-This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux). It publishes the OpenCode **2.1.3** build on the Android/Bionic Bun **1.4.4** runtime with OpenTUI 0.6.6, including the Android 11+ heap-pointer-tagging fix and Google Play Termux startup support. The v2.1.2 build has been confirmed working on-device; v2.1.3 is a pre-release until it is confirmed on-device.
+This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux). It publishes the OpenCode **2.1.3** build on the verified Android/Bionic Bun **1.4.0** runtime with OpenTUI 0.6.6, including the Android 11+ heap-pointer-tagging fix and Google Play Termux startup support. The v2.1.2 build has been confirmed working on-device; v2.1.3 is a pre-release until it is confirmed on-device.
 
 ## Requirements
 
 - Termux on an Android/aarch64 device running Android 9 (API 28) or newer.
-- About 340 MiB free during installation (about 105 MiB archive plus the 230 MiB binary); about 230 MiB after installation.
+- About 410 MiB free during installation (about 105 MiB archive plus the 305 MiB binary); about 305 MiB after installation.
 - `curl` and `sha256sum` in Termux. No Node.js, npm, root, or PRoot is needed to run it.
 
 ## Install
@@ -106,7 +106,7 @@ The 2.1.3 release is built from pinned source in GitHub Actions, not uploaded fr
 
 ## Releases and provenance
 
-The current pre-release is [v2.1.3](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3): OpenCode 2.1.3 on the Android Bun 1.4.4 base with the Bionic OpenTUI 0.6.6 renderer. The verified [v2.1.2](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.2) release remains available for rollback.
+The current pre-release is [v2.1.3](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3): OpenCode 2.1.3 on the verified Android Bun 1.4.0 base with the Bionic OpenTUI 0.6.6 renderer. The verified [v2.1.2](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.2) release remains available for rollback.
 
 The [build workflow](.github/workflows/build-native-android.yml) produces a candidate. After testing, the [release workflow](.github/workflows/publish-native-android.yml) downloads that CI artifact, verifies its hash, and publishes it. [Build inputs](tools/supply-chain-lock.json) are pinned to specific versions, hashes, or commits. Releases are currently manual, not weekly automatic updates.
 

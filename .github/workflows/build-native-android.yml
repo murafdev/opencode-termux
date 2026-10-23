@@ -7,9 +7,9 @@ on:
         description: Build strategy for the unsigned candidate
         type: choice
         required: true
-        default: source-bun144
+        default: source-bun140
         options:
-          - source-bun144
+          - source-bun140
 
 permissions:
   contents: read
@@ -206,17 +206,17 @@ jobs:
           assert product.is_file() and product.stat().st_size > 50_000_000
           PY
 
-      - name: Build version-matched Bun 1.4.4 source package and transplant it
-        if: ${{ inputs.strategy == 'source-bun144' }}
-        run: bash scripts/ci/build-opencode-source-bun144.sh
+      - name: Build version-matched Bun 1.4.0 source package and transplant it
+        if: ${{ inputs.strategy == 'source-bun140' }}
+        run: bash scripts/ci/build-opencode-source-bun140.sh
 
       - name: Stage candidate and checksums
         run: |
           set -euo pipefail
           OUT="artifacts/transplant/$OPENCODE_VERSION"
           mkdir -p dist
-          if [ "${{ inputs.strategy }}" = source-bun144 ]; then
-            NAME="opencode-$OPENCODE_VERSION-android-aarch64-source-bun144"
+          if [ "${{ inputs.strategy }}" = source-bun140 ]; then
+            NAME="opencode-$OPENCODE_VERSION-android-aarch64-source-bun140"
           else
             NAME="opencode-$OPENCODE_VERSION-android-aarch64"
           fi

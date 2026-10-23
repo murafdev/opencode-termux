@@ -17,7 +17,8 @@
     },
     "2.1.3": {
       "commit": "bb25a2f4a3f3f04d7c344bec0c0574ea3510b3b1",
-      "bun_version": "1.4.4"
+      "bun_version": "1.4.0",
+      "upstream_bun_version": "1.4.4"
     }
   },
   "android_bun": {
