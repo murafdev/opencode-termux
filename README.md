@@ -7,7 +7,7 @@ This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/
 ## Requirements
 
 - Termux on an Android/aarch64 device running Android 9 (API 28) or newer.
-- About 410 MiB free during installation (about 105 MiB archive plus the 305 MiB binary); about 305 MiB after installation.
+- About 340 MiB free during installation (about 105 MiB archive plus the 230 MiB binary); about 230 MiB after installation.
 - `curl` and `sha256sum` in Termux. No Node.js, npm, root, or PRoot is needed to run it.
 
 ## Install
