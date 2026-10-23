@@ -7,7 +7,7 @@ fail the build instead of silently dropping a safety patch.
 """
 
 import json
-import sys
+import argparse
 from pathlib import Path
 
 
@@ -20,17 +20,28 @@ def replace_once(path: Path, old: str, new: str) -> None:
 
 
 def main() -> None:
-    if len(sys.argv) != 2:
-        raise SystemExit("usage: patch-opencode-source-bun140.py SOURCE_ROOT")
-    root = Path(sys.argv[1])
+    parser = argparse.ArgumentParser()
+    parser.add_argument("source_root")
+    parser.add_argument("--bun-version", choices=("1.4.0", "1.4.4"), default="1.4.0")
+    parser.add_argument(
+        "--disable-bytecode",
+        action="store_true",
+        help="keep source in the compiled graph for cross-platform transplant diagnostics",
+    )
+    args = parser.parse_args()
+    root = Path(args.source_root)
     package = root / "package.json"
     metadata = json.loads(package.read_text(encoding="utf-8"))
     manager = metadata.get("packageManager")
-    # OpenCode 2.1.3 pins bun@1.4.4 upstream. The native Android build uses the
-    # proven 1.4.0 toolchain/base, so accept the upstream pin and rewrite it.
+    # OpenCode 2.1.3 pins bun@1.4.4 upstream. The stable Termux build uses the
+    # proven 1.4.0 toolchain/base; diagnostic builds may retain the upstream pin.
     if manager not in ("bun@1.4.4", "bun@1.4.2"):
         raise SystemExit(f"unexpected packageManager: {manager!r}")
-    replace_once(package, f'"packageManager": "{manager}"', '"packageManager": "bun@1.4.0"')
+    replace_once(
+        package,
+        f'"packageManager": "{manager}"',
+        f'"packageManager": "bun@{args.bun_version}"',
+    )
 
     process = root / "packages/cli/src/util/process.ts"
     replace_once(
@@ -105,6 +116,8 @@ def main() -> None:
         '   return pinned\n'
         ' }\n',
     )
+    if args.disable_bytecode:
+        replace_once(build, "    bytecode: true,\n", "    bytecode: false,\n")
 
     upgrade = root / "packages/cli/src/commands/handlers/upgrade.ts"
     replace_once(

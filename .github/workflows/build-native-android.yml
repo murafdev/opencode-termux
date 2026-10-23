@@ -10,6 +10,7 @@ on:
         default: source-bun140
         options:
           - source-bun140
+          - source-bun144-sourcegraph
 
 permissions:
   contents: read
@@ -70,11 +71,14 @@ jobs:
           bind = json.load(open("tools/transplant/config/bun-bind.json", encoding="utf-8"))
           oc = lock["opencode"][os.environ["OPENCODE_VERSION"]]
           ot = lock["opentui"][os.environ["OPENTUI_VERSION"]]
-          bun_version = oc["bun_version"]
+          strategy = os.environ["BUILD_STRATEGY"]
+          bun_version = (
+              "1.4.4" if strategy == "source-bun144-sourcegraph" else oc["bun_version"]
+          )
           bun = lock["android_bun"][bun_version]
           assert ot["commit"] == os.environ["OPENTUI_COMMIT"]
           assert ot["zig_version"] == os.environ["ZIG_VERSION"]
-          if os.environ["BUILD_STRATEGY"] == "upstream-transplant":
+          if strategy == "upstream-transplant":
               assert bind["target"] == bun_version, (bind["target"], bun_version)
               assert bind["archive_sha256"] == bun["archive_sha256"]
               assert bind["elf_sha256"] == bun["elf_sha256"]
@@ -210,6 +214,10 @@ jobs:
         if: ${{ inputs.strategy == 'source-bun140' }}
         run: bash scripts/ci/build-opencode-source-bun140.sh
 
+      - name: Build Bun 1.4.4 source-mode diagnostic candidate
+        if: ${{ inputs.strategy == 'source-bun144-sourcegraph' }}
+        run: bash scripts/ci/build-opencode-source-bun144-sourcegraph.sh
+
       - name: Stage candidate and checksums
         run: |
           set -euo pipefail
@@ -217,12 +225,17 @@ jobs:
           mkdir -p dist
           if [ "${{ inputs.strategy }}" = source-bun140 ]; then
             NAME="opencode-$OPENCODE_VERSION-android-aarch64-source-bun140"
+          elif [ "${{ inputs.strategy }}" = source-bun144-sourcegraph ]; then
+            NAME="opencode-$OPENCODE_VERSION-android-aarch64-source-bun144-sourcegraph"
           else
             NAME="opencode-$OPENCODE_VERSION-android-aarch64"
           fi
           install -m 0755 "$OUT/opencode-native-tui" "dist/$NAME"
           cp "$OUT/report.json" dist/transplant-report.json
           cp tools/supply-chain-lock.json dist/supply-chain-lock.json
+          if [ "${{ inputs.strategy }}" = source-bun144-sourcegraph ]; then
+            cp "$OUT/build-variant.json" dist/build-variant.json
+          fi
           (cd dist && sha256sum * > SHA256SUMS)
           file "dist/$NAME"
           cat dist/SHA256SUMS
