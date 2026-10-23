@@ -21,13 +21,12 @@ def replace_once(path: Path, old: str, new: str) -> None:
 
 def main() -> None:
     if len(sys.argv) != 2:
-        raise SystemExit("usage: patch-opencode-source-bun140.py SOURCE_ROOT")
+        raise SystemExit("usage: patch-opencode-source-bun144.py SOURCE_ROOT")
     root = Path(sys.argv[1])
     package = root / "package.json"
     metadata = json.loads(package.read_text(encoding="utf-8"))
-    if metadata.get("packageManager") != "bun@1.4.2":
+    if metadata.get("packageManager") != "bun@1.4.4":
         raise SystemExit(f"unexpected packageManager: {metadata.get('packageManager')!r}")
-    replace_once(package, '"packageManager": "bun@1.4.2"', '"packageManager": "bun@1.4.0"')
 
     process = root / "packages/cli/src/util/process.ts"
     replace_once(
@@ -120,7 +119,7 @@ def main() -> None:
         '      if (selfExecutable() === path.join(global.home, ".local", "bin", "opencode")) {\n'
         '        return yield* Effect.fail(new Error(\n'
         '          "This native Termux build must be upgraded with its verified release installer: " +\n'
-        '          "curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.2/install.sh | sh"\n'
+        '          "curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.3/install.sh | sh"\n'
         '        ))\n'
         '      }\n'
         '      const updater = yield* Updater.Service\n',

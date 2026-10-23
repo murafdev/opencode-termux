@@ -54,14 +54,14 @@ def main() -> int:
         fail(f"publish RELEASE_TAG {release_tag!r} does not match v{version}")
     if installer_tag != f"v{version}":
         fail(f"install.sh release_tag {installer_tag!r} does not match v{version}")
-    expected_asset = f"opencode-{version}-android-aarch64-source-bun140"
+    expected_asset = f"opencode-{version}-android-aarch64-source-bun144"
     if asset != expected_asset:
         fail(f"publish ASSET {asset!r} does not match {expected_asset!r}")
     if installer_asset != expected_asset:
         fail(f"install.sh asset {installer_asset!r} does not match {expected_asset!r}")
-    if f"opencode-{version}-android-aarch64-source-bun140-candidate" not in publish:
+    if f"opencode-{version}-android-aarch64-source-bun144-candidate" not in publish:
         fail("publish workflow does not download the current candidate artifact")
-    if f"raw/v{version}/install.sh" not in read("tools/patch-opencode-source-bun140.py"):
+    if f"raw/v{version}/install.sh" not in read("tools/patch-opencode-source-bun144.py"):
         fail("upgrade guard installer URL does not match the current release tag")
     if f"OpenCode {version} for Termux" not in read("RELEASE_NOTES.md"):
         fail(f"RELEASE_NOTES.md does not describe OpenCode {version}")
