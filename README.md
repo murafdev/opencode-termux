@@ -2,7 +2,7 @@
 
 [OpenCode](https://opencode.ai) is an AI-powered terminal coding assistant. This project ships it as a native Android/aarch64 Bionic binary for [Termux](https://termux.dev): no PRoot, no glibc.
 
-This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux). It publishes the OpenCode **2.1.2** build with OpenTUI 0.6.6, including the Android 11+ heap-pointer-tagging fix. The TUI has been confirmed working on-device; wider device testing is welcome.
+This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux). It publishes the OpenCode **2.1.2** build with OpenTUI 0.6.6, including the Android 11+ heap-pointer-tagging fix and Google Play Termux startup support. The TUI has been confirmed working on-device; wider device testing is welcome.
 
 ## Requirements
 
@@ -64,6 +64,12 @@ No apt/pacman package for this build has been published by this project.
 ### Android 11+ pointer tagging
 
 Android 11 and newer tag 64-bit heap pointers in the top byte. OpenTUI `0.6.6` converts native pointers to JavaScript numbers and rejects addresses above `Number.MAX_SAFE_INTEGER`, which aborted TUI startup with `Pointer exceeds safe integer range`. This build's renderer library disables heap tagging as soon as it loads, so the context handle and later allocations reach JavaScript untagged. No wrapper script or extra library is installed.
+
+### Google Play Termux
+
+The Google Play build of Termux executes app-data binaries through `/system/bin/linker64` (the Android 10+ W^X workaround). This build detects that mode, resolves the real `opencode` path from `argv[0]`, and re-execs its server through `/system/bin/sh`, so the TUI and standalone mode start normally.
+
+If you installed an earlier v2.1.2 build and see `error: expected absolute path: "serve"` or `Standalone server exited before reporting readiness`, reinstall with the command above. GitHub/F-Droid Termux is unaffected.
 
 ## Migrating from v1
 
