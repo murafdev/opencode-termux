@@ -10,7 +10,7 @@ TESTS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BATS_BIN="$("$TESTS_DIR/bootstrap.sh")"
 
 if [[ $# -gt 0 ]]; then
-	exec "$BATS_BIN" "$@"
+	exec "$BATS_BIN" --print-output-on-failure "$@"
 fi
 
-exec "$BATS_BIN" --recursive "$TESTS_DIR/unit"
+exec "$BATS_BIN" --print-output-on-failure --recursive "$TESTS_DIR/unit"
