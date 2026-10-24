@@ -52,12 +52,13 @@ import re
 import struct
 import sys
 
-PAGE_ALIGN = 0x4000          # bun android binaries use 16K segment alignment
+PAGE_ALIGN = 0x10000         # Bun's AArch64 ELF payloads use 64K alignment
 TRAILER = b"\n---- Bun! ----\n"
 OFFSETS_SIZE = 32            # StandaloneModuleGraph.Offsets extern struct
 PT_LOAD = 1
 PT_DYNAMIC = 2
 PF_W = 0x2                   # program header flag: writable (SHF_WRITE==0x1 is a SECTION flag!)
+SHT_NOBITS = 8
 R_AARCH64_RELATIVE = 1027    # 0x403
 DT_NULL = 0
 DT_RELA = 7                  # address of rela table (vaddr)
@@ -147,6 +148,71 @@ def find_dynamic_entries(out: bytearray, dyn_phdr: dict):
             break
     return ents
 
+def relocate_file_tail(out: bytearray, original: bytes, tail_start: int,
+                       phdrs: list, load_index: int, bun_section_index: int,
+                       payload_offset: int, payload_size: int) -> int:
+    """Move non-PT_LOAD ELF data out of the enlarged segment's file range.
+
+    The Android Bun ELF places its section-table/symbol-table tail at the end
+    of the writable PT_LOAD's file bytes, immediately where its .bss begins in
+    memory. Extending p_filesz without moving this tail makes those metadata
+    bytes back what used to be zero-filled globals.
+    """
+    if tail_start > len(original):
+        fail(f"writable PT_LOAD file end {tail_start:#x} exceeds file size {len(original):#x}")
+
+    tail_destination = align_up(len(out), PAGE_ALIGN)
+    if tail_destination < tail_start:
+        fail("relocated ELF tail would overlap the original writable PT_LOAD")
+    out.extend(b"\x00" * (tail_destination - len(out)))
+    out.extend(original[tail_start:])
+    delta = tail_destination - tail_start
+
+    # Move any non-load program-header references into the relocated tail.
+    for phdr in phdrs:
+        if phdr["index"] == load_index or phdr["filesz"] == 0:
+            continue
+        start = phdr["offset"]
+        end = start + phdr["filesz"]
+        if start < tail_start < end:
+            fail(f"program header #{phdr['index']} straddles the relocated ELF tail")
+        if start >= tail_start and start < len(original):
+            if phdr["type"] == PT_LOAD:
+                fail(f"PT_LOAD #{phdr['index']} extends into the relocated ELF tail")
+            struct.pack_into("<Q", out, phdr["hdr_off"] + 8, start + delta)
+
+    e_shoff = struct.unpack_from("<Q", original, 40)[0]
+    e_shentsize = struct.unpack_from("<H", original, 58)[0]
+    e_shnum = struct.unpack_from("<H", original, 60)[0]
+    shdr_size = e_shentsize * e_shnum
+    if not e_shoff or e_shentsize < 64 or e_shoff + shdr_size > len(original):
+        fail("invalid section-header table while relocating ELF tail")
+    if e_shoff < tail_start < e_shoff + shdr_size:
+        fail("section-header table straddles the relocated ELF tail")
+
+    new_shoff = e_shoff + delta if e_shoff >= tail_start else e_shoff
+    for index in range(e_shnum):
+        old_hdr = e_shoff + index * e_shentsize
+        new_hdr = new_shoff + index * e_shentsize
+        sh_type = struct.unpack_from("<I", original, old_hdr + 4)[0]
+        sh_offset = struct.unpack_from("<Q", original, old_hdr + 24)[0]
+        sh_size = struct.unpack_from("<Q", original, old_hdr + 32)[0]
+        if sh_type != SHT_NOBITS:
+            if sh_offset < tail_start and sh_offset + sh_size > tail_start:
+                fail(f"section #{index} straddles the relocated ELF tail")
+            if tail_start <= sh_offset < len(original):
+                sh_offset += delta
+        struct.pack_into("<Q", out, new_hdr + 24, sh_offset)
+
+    # Match Bun's ELF writer: the symbol's original slot still contains the
+    # payload vaddr, while the .bun section header describes the appended blob.
+    bun_hdr = new_shoff + bun_section_index * e_shentsize
+    struct.pack_into("<Q", out, bun_hdr + 16, payload_offset)  # sh_addr
+    struct.pack_into("<Q", out, bun_hdr + 24, payload_offset)  # sh_offset
+    struct.pack_into("<Q", out, bun_hdr + 32, payload_size)    # sh_size
+    struct.pack_into("<Q", out, 40, new_shoff)
+    return tail_destination
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="C1 revival ELF surgery")
     ap.add_argument("--bun", required=True, help="official android bun ELF (base)")
@@ -213,13 +279,27 @@ def main() -> None:
     if load["offset"] != load["vaddr"]:
         fail(f"covering PT_LOAD offset {load['offset']:#x} != vaddr {load['vaddr']:#x}; identity mapping required")
     old_filesz, old_memsz = load["filesz"], load["memsz"]
+    tail_start = load["offset"] + old_filesz
+    load_end = load["vaddr"] + old_memsz
+    max_load_end = max(
+        p["vaddr"] + p["memsz"] for p in phdrs if p["type"] == PT_LOAD
+    )
+    if load_end != max_load_end:
+        fail("writable PT_LOAD containing .bun is not the highest PT_LOAD")
+    for p in phdrs:
+        if p["type"] == PT_LOAD and p["index"] != load["index"]:
+            if p["offset"] + p["filesz"] > tail_start:
+                fail(f"PT_LOAD #{p['index']} file data extends past writable PT_LOAD end")
+    bun_section_index = shdrs.index(bun_sec)
 
-    # BSS-safe placement: skip past the old NOBITS extent so appended bytes can
-    # never alias zero-initialized globals (v1 hang root cause).
+    # Place the payload after both the old BSS and every existing mapping.
+    # The original ELF tail is relocated after it and zero-fill replaces the
+    # bytes from the writable segment's file end through the payload address.
     bss_end = load["offset"] + old_memsz
-    new_off = align_up(max(len(bun_bytes), bss_end), PAGE_ALIGN)
+    new_off = align_up(max(len(bun_bytes), bss_end, max_load_end), PAGE_ALIGN)
     print(f"[4/6] covering PT_LOAD #{load['index']}: off==vaddr={load['vaddr']:#x} "
-          f"filesz={old_filesz:#x} memsz={old_memsz:#x} | bss_end={bss_end:#x} -> new_off={new_off:#x}")
+          f"filesz={old_filesz:#x} memsz={old_memsz:#x} | bss_end={bss_end:#x} "
+          f"tail_start={tail_start:#x} -> new_off={new_off:#x}")
 
     # --- build output: zero-pad over old bss extent, append blob ---
     if args.size_mode == "plain-offset":
@@ -241,8 +321,10 @@ def main() -> None:
             blob = struct.pack("<Q", len(payload)) + payload + b"\x00" * 8
     else:
         blob = struct.pack("<Q", len(payload)) + payload
-    out = bytearray(bun_bytes)
-    out.extend(b"\x00" * (new_off - len(bun_bytes)))
+    if tail_start > len(bun_bytes):
+        fail("writable PT_LOAD file end exceeds base ELF size")
+    out = bytearray(bun_bytes[:tail_start])
+    out.extend(b"\x00" * (new_off - len(out)))
     out.extend(blob)
 
     append_end = new_off + len(blob)           # identity mapping: vaddr == file offset
@@ -298,8 +380,15 @@ def main() -> None:
         size_note = (f"BUN_COMPILED.size left 0 pre-link, filled by ld.so "
                      f"relocation = load_bias + {new_off:#x}")
 
-    # --- extend the writable PT_LOAD over everything appended ---
-    new_filesz = append_end - load["offset"]
+    # Move symbol/string tables and section headers past the expanded segment;
+    # leaving them at the old EOF would file-back the original .bss region.
+    segment_end = relocate_file_tail(
+        out, bun_bytes, tail_start, phdrs, load["index"], bun_section_index,
+        new_off, len(blob),
+    )
+
+    # --- extend the writable PT_LOAD through the aligned payload, not ELF metadata ---
+    new_filesz = segment_end - load["offset"]
     new_memsz = max(old_memsz, new_filesz)
     struct.pack_into("<Q", out, load["hdr_off"] + 8 + 8 * 3, new_filesz)   # p_filesz
     struct.pack_into("<Q", out, load["hdr_off"] + 8 + 8 * 4, new_memsz)    # p_memsz
