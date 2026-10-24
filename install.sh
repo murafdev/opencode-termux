@@ -1,8 +1,8 @@
 #!/bin/sh
 set -eu
 
-release_tag=v2.1.3
-asset=opencode-2.1.3-android-aarch64-source-bun140
+release_tag=v2.1.3-bun144.1
+asset=opencode-2.1.3-android-aarch64-source-bun144-sourcegraph
 archive="$asset.tar.gz"
 base_url="https://github.com/murafdev/opencode-termux/releases/download/$release_tag"
 destination="$HOME/.local/bin/opencode"

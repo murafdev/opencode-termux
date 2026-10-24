@@ -35,10 +35,14 @@ def main() -> int:
     build = read(".github/workflows/build-native-android.yml")
     publish = read(".github/workflows/publish-native-android.yml")
     installer = read("install.sh")
+    readme = read("README.md")
+    notes = read("RELEASE_NOTES.md")
+    sourcegraph = read("scripts/ci/build-opencode-source-bun144-sourcegraph.sh")
 
     version = find(r'^\s+OPENCODE_VERSION: "([^"]+)"', build, "build workflow")
     opentui_version = find(r'^\s+OPENTUI_VERSION: "([^"]+)"', build, "build workflow")
     opentui_commit = find(r'^\s+OPENTUI_COMMIT: "([0-9a-f]{40})"', build, "build workflow")
+    build_release_tag = find(r'^\s+TERMUX_RELEASE_TAG: "([^"]+)"', build, "build workflow")
     release_tag = find(r'^\s+RELEASE_TAG: "([^"]+)"', publish, "publish workflow")
     asset = find(r'^\s+ASSET: "([^"]+)"', publish, "publish workflow")
     installer_tag = find(r"^release_tag=(.+)$", installer, "install.sh")
@@ -50,21 +54,32 @@ def main() -> int:
         fail(f"OpenTUI {opentui_version} is not pinned in tools/supply-chain-lock.json")
     if lock["opentui"][opentui_version]["commit"] != opentui_commit:
         fail(f"OpenTUI {opentui_version} commit does not match the lock")
-    if release_tag != f"v{version}":
-        fail(f"publish RELEASE_TAG {release_tag!r} does not match v{version}")
-    if installer_tag != f"v{version}":
-        fail(f"install.sh release_tag {installer_tag!r} does not match v{version}")
-    expected_asset = f"opencode-{version}-android-aarch64-source-bun140"
+    expected_release_tag = f"v{version}-bun144.1"
+    if build_release_tag != expected_release_tag:
+        fail(f"build TERMUX_RELEASE_TAG {build_release_tag!r} does not match {expected_release_tag!r}")
+    if release_tag != expected_release_tag:
+        fail(f"publish RELEASE_TAG {release_tag!r} does not match {expected_release_tag!r}")
+    if installer_tag != expected_release_tag:
+        fail(f"install.sh release_tag {installer_tag!r} does not match {expected_release_tag!r}")
+    expected_asset = f"opencode-{version}-android-aarch64-source-bun144-sourcegraph"
     if asset != expected_asset:
         fail(f"publish ASSET {asset!r} does not match {expected_asset!r}")
     if installer_asset != expected_asset:
         fail(f"install.sh asset {installer_asset!r} does not match {expected_asset!r}")
-    if f"opencode-{version}-android-aarch64-source-bun140-candidate" not in publish:
+    if "opencode-$OPENCODE_VERSION-android-aarch64-source-bun144-sourcegraph-candidate" not in publish:
         fail("publish workflow does not download the current candidate artifact")
-    if f"raw/v{version}/install.sh" not in read("tools/patch-opencode-source-bun140.py"):
-        fail("upgrade guard installer URL does not match the current release tag")
-    if f"OpenCode {version} for Termux" not in read("RELEASE_NOTES.md"):
+    if '"$TERMUX_RELEASE_TAG"' not in sourcegraph or "--release-tag" not in sourcegraph:
+        fail("Bun 1.4.4 build does not embed the current release installer URL")
+    if "default: source-bun144-sourcegraph" not in build:
+        fail("Bun 1.4.4 source-graph strategy must be the default build")
+    if f"OpenCode {version} for Termux" not in notes:
         fail(f"RELEASE_NOTES.md does not describe OpenCode {version}")
+    if f"releases/tag/{expected_release_tag}" not in readme:
+        fail("README does not link to the current release page")
+    if f"raw/{expected_release_tag}/install.sh" not in readme:
+        fail("README install command does not use the current release installer")
+    if f"raw/v{version}/install.sh" not in readme or f"raw/v{version}/install.sh" not in notes:
+        fail("README and release notes must retain the v2.1.3 Bun 1.4.0 rollback")
 
     patch_script = f"tools/patch-opentui-{opentui_version}.py"
     if not (ROOT / patch_script).is_file():
@@ -78,7 +93,7 @@ def main() -> int:
 
     print(
         f"check-release-pins: OK (OpenCode {version}, OpenTUI {opentui_version}, "
-        f"tag {release_tag})"
+        f"tag {release_tag}, Bun 1.4.4 source-graph asset)"
     )
     return 0
 

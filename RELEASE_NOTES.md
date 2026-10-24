@@ -1,48 +1,35 @@
-# OpenCode 2.1.3 for Termux
+# OpenCode 2.1.3 for Termux — Bun 1.4.4 build
 
-Run OpenCode v2 directly in Termux on Android ARM64, without PRoot or glibc. This release updates the app from 2.1.2 to 2.1.3 and keeps the verified Android/Bionic Bun 1.4.0 runtime, with the single `opencode` command.
+This Termux build runs OpenCode `2.1.3` directly on Android ARM64/Bionic, without PRoot or glibc. Release tag `v2.1.3-bun144.1` updates the Android runtime from Bun 1.4.0 to the matching Bun 1.4.4 runtime while preserving the OpenTUI 0.6.6 Android renderer and the `opencode` command.
 
-Install in Termux:
+Install or update in Termux:
+
+```sh
+curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.3-bun144.1/install.sh | sh
+```
+
+The installer verifies the downloaded archive and extracted binary before atomically replacing `~/.local/bin/opencode`. It retains chats, sign-ins, and configuration. The reported CLI version remains `opencode v2.1.3`.
+
+## What changed
+
+- Android/Bionic Bun runtime updated to `1.4.4`, matching the pinned OpenCode 2.1.3 source toolchain.
+- Fixed the transplant layout so ELF metadata appended to a `PT_LOAD` segment does not overwrite the runtime's zero-filled `.bss`.
+- The candidate was built in GitHub Actions as a source-mode module graph (`bytecode: false`) and transplanted onto the hash-verified Android Bun 1.4.4 binary.
+- OpenTUI `0.6.6` remains pinned with the Android/Bionic hardening patches, including heap-pointer-tagging handling and the Google Play Termux self-spawn fix.
+- The native `opencode upgrade` guard points at this release's installer. `opencode uninstall --dry-run` previews removal; uninstall keeps user data.
+
+## Rollback to the previous Bun 1.4.0 build
+
+The existing `v2.1.3` release remains unchanged and is the rollback target. It contains OpenCode 2.1.3 on the previously verified Android/Bionic Bun 1.4.0 runtime:
 
 ```sh
 curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.3/install.sh | sh
 ```
 
-If `~/.local/bin` is not already on your `PATH`, add it once and reload your shell:
-
-```sh
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-For Zsh use `~/.zshrc`; for Fish run `fish_add_path ~/.local/bin`. Then run `opencode --version` (expected: `2.1.3`) and `opencode`.
-
-Installing and running OpenCode needs no Android storage permission; everything stays in Termux's private home. To open projects in shared storage, run `termux-setup-storage` once and approve the Android prompt (on Android 11+ you may also need **All files access** for Termux), then use paths such as `~/storage/shared/Documents/my-project`.
-
-The installer checks both the compressed download and the extracted binary against release checksums before replacing `~/.local/bin/opencode`. It keeps your chats, sign-ins, and configuration. Back up your OpenCode data first if you might need to return to v2.1.2 or v1, because v2 may migrate the session database.
-
-## What changed
-
-- OpenCode updated to upstream `2.1.3`.
-- OpenCode 2.1.3 is built with the verified Bun `1.4.0` host, Linux target, and Android/Bionic base. The upstream source pins `bun@1.4.4`, so the build rewrites `packageManager` to `bun@1.4.0` and regenerates the module graph with the matching toolchain. A 1.4.4 Android candidate was evaluated but reverted because it segfaulted during Bun/JSC startup before OpenCode code ran; keeping 1.4.0 preserves the runtime that v2.1.2 already proved on-device.
-- The bundled OpenTUI renderer remains pinned to `0.6.6` with the Android/Bionic hardening patches.
-- The Google Play Termux startup fix is retained: app-data executables are resolved through `argv[0]`, and self-spawned servers are launched through `/system/bin/sh` when the process runs under the bionic linker.
-- The Termux installer guard for `opencode upgrade` and the native-binary handling in `opencode uninstall` are updated for the 2.1.3 command handlers.
-
-`opencode upgrade` refuses to download an incompatible upstream build; to update this fork build, run the install command above. `opencode uninstall --dry-run` previews removal; `opencode uninstall` removes this binary and the shared cache after confirmation, but retains user data.
-
-## Rollback to 2.1.2
-
-The `v2.1.2` tag and its release assets are kept unchanged. If this release causes any problem, reinstall the previous build with:
-
-```sh
-curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.2/install.sh | sh
-```
-
-That installer is pinned to the v2.1.2 asset and checksum, so it does not depend on the v2.1.3 release. Back up your OpenCode data first if you might need the older session database.
+The v2.1.2 release is also retained. Back up OpenCode data before downgrading if you may need to recover an older session database.
 
 ## Provenance and testing
 
-This release has been confirmed on-device and is the current stable release. The build comes from pinned OpenCode source and Android/Bionic components in [GitHub Actions](https://github.com/murafdev/opencode-termux/actions/workflows/build-native-android.yml). Checksums and build inputs are attached to the release; the [source-build guide](https://github.com/murafdev/opencode-termux/blob/v2.1.3/docs/native-v2-build.md) shows how to reproduce it.
+This release is published from a successful GitHub Actions artifact, not from a phone-side build. The source candidate is [Actions run 40054752500](https://github.com/murafdev/opencode-termux/actions/runs/40054752500); its binary SHA-256 is `a66712db76ce82d9156cffc5ae823ef2c9f6feacec4910da3e8dc1ebcdd7d757`. The attached `SHA256SUMS`, supply-chain lock, build-variant metadata, and transplant report record the artifact and pinned inputs.
 
-The release is published only from a successful CI candidate whose archive, binary header, Bionic dependencies, renderer guard, and transplant report were verified by the build job. This candidate is from [Actions run 39926528221](https://github.com/murafdev/opencode-termux/actions/runs/39926528221); the binary SHA-256 is `3005943f97eca150ed07a565bd541f034505502a9c235d225bf5cd8db47f4887`. The build report confirms OpenCode `2.1.3`, the `.bun` section graph, the Bun `1.4.0` Android base in plain-offset mode, and the Play Store self-spawn fix. The release was confirmed on-device and marked as the latest stable release on 2026-10-23. The Bun 1.4.0 pin is a compatibility exception for this Android/Bionic target; it is not equivalent to upstream Bun 1.4.4, which still fails during Bun/JSC startup here. If this release fails on your device, reinstall v2.1.2 with the rollback command above.
+On one Android/Termux device, this exact candidate passed `--version`, interactive TUI startup, and one real provider prompt. The Linux CI runner could verify the build and transplant but skipped its runtime TUI probe because it was not AArch64. These results are single-device validation, not a claim of multi-device coverage; please report device-specific problems.

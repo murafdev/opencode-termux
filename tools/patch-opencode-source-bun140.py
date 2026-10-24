@@ -8,6 +8,7 @@ fail the build instead of silently dropping a safety patch.
 
 import json
 import argparse
+import re
 from pathlib import Path
 
 
@@ -24,17 +25,24 @@ def main() -> None:
     parser.add_argument("source_root")
     parser.add_argument("--bun-version", choices=("1.4.0", "1.4.4"), default="1.4.0")
     parser.add_argument(
+        "--release-tag",
+        default="v2.1.3",
+        help="tag whose verified installer the native upgrade guard should show",
+    )
+    parser.add_argument(
         "--disable-bytecode",
         action="store_true",
-        help="keep source in the compiled graph for cross-platform transplant diagnostics",
+        help="keep source in the compiled graph for source-mode transplant builds",
     )
     args = parser.parse_args()
+    if not re.fullmatch(r"v[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?", args.release_tag):
+        raise SystemExit(f"invalid release tag: {args.release_tag!r}")
     root = Path(args.source_root)
     package = root / "package.json"
     metadata = json.loads(package.read_text(encoding="utf-8"))
     manager = metadata.get("packageManager")
-    # OpenCode 2.1.3 pins bun@1.4.4 upstream. The stable Termux build uses the
-    # proven 1.4.0 toolchain/base; diagnostic builds may retain the upstream pin.
+    # OpenCode 2.1.3 pins bun@1.4.4 upstream. Callers select the matching
+    # host toolchain/runtime explicitly; 1.4.0 remains available for rollback.
     if manager not in ("bun@1.4.4", "bun@1.4.2"):
         raise SystemExit(f"unexpected packageManager: {manager!r}")
     replace_once(
@@ -136,7 +144,7 @@ def main() -> None:
         '      if (selfExecutable() === path.join(global.home, ".local", "bin", "opencode")) {\n'
         '        return yield* Effect.fail(new Error(\n'
         '          "This native Termux build must be upgraded with its verified release installer: " +\n'
-        '          "curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.3/install.sh | sh"\n'
+        f'          "curl -fsSL https://github.com/murafdev/opencode-termux/raw/{args.release_tag}/install.sh | sh"\n'
         '        ))\n'
         '      }\n'
         '      const updater = yield* Updater.Service\n',

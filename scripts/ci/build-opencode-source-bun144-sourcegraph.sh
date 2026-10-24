@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# Diagnostic-only candidate: build OpenCode 2.1.3 with Bun 1.4.4, but leave
+# Runtime-test candidate: build OpenCode 2.1.3 with Bun 1.4.4, but leave
 # JavaScript source (not target-specific bytecode) in the graph before grafting
 # it onto the official Android/Bionic Bun 1.4.4 runtime.
 #
-# This is not a release path. The uploaded ARM64 artifact must be run on-device
-# before drawing conclusions about the Linux-bytecode-to-Android transplant.
+# The CI artifact is not released automatically. It must pass on-device checks
+# and the verified CI publishing workflow before it becomes a user release.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT"
 : "${OPENCODE_VERSION:?OPENCODE_VERSION must be set}"
+: "${TERMUX_RELEASE_TAG:?TERMUX_RELEASE_TAG must be set}"
 
 readarray -t locked < <(python3 - "$OPENCODE_VERSION" <<'PY'
 import json
@@ -64,9 +65,10 @@ git -C "$src" fetch --depth=1 origin "$commit"
 git -C "$src" checkout --detach FETCH_HEAD
 test "$(git -C "$src" rev-parse HEAD)" = "$commit"
 python3 tools/patch-opencode-source-bun140.py \
-  "$src" --bun-version 1.4.4 --disable-bytecode
+  "$src" --bun-version 1.4.4 --disable-bytecode \
+  --release-tag "$TERMUX_RELEASE_TAG"
 
-python3 - "$WORK/build-variant.json" "$commit" <<'PY'
+python3 - "$WORK/build-variant.json" "$commit" "$TERMUX_RELEASE_TAG" <<'PY'
 import json
 import sys
 
@@ -79,6 +81,7 @@ with open(sys.argv[1], "w", encoding="utf-8") as f:
             "android_runtime": "1.4.4 aarch64 Bionic",
             "bytecode": False,
             "opencode_commit": sys.argv[2],
+            "termux_release_tag": sys.argv[3],
             "purpose": "Compare source-mode graph transplant with the bytecode candidate",
         },
         f,
