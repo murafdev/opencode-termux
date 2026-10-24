@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Check that the native release version pins agree across the repository.
+"""Check the native candidate pins while keeping the published release stable.
 
-A release touches install.sh, both native workflows, the supply-chain lock, the
-OpenTUI patch script names, and the release notes. This check fails fast (and
-in CI, before a build) when one of them is left on an older version.
+The candidate may advance before install.sh, README, and the publisher workflow
+are promoted. This check verifies both sets independently so a test build does
+not accidentally redirect users to an unpublished release.
 """
 
 import json
@@ -41,6 +41,7 @@ def main() -> int:
 
     version = find(r'^\s+OPENCODE_VERSION: "([^"]+)"', build, "build workflow")
     opentui_version = find(r'^\s+OPENTUI_VERSION: "([^"]+)"', build, "build workflow")
+    opentui_patch_version = find(r'^\s+OPENTUI_PATCH_VERSION: "([^"]+)"', build, "build workflow")
     opentui_commit = find(r'^\s+OPENTUI_COMMIT: "([0-9a-f]{40})"', build, "build workflow")
     build_release_tag = find(r'^\s+TERMUX_RELEASE_TAG: "([^"]+)"', build, "build workflow")
     release_tag = find(r'^\s+RELEASE_TAG: "([^"]+)"', publish, "publish workflow")
@@ -48,52 +49,63 @@ def main() -> int:
     installer_tag = find(r"^release_tag=(.+)$", installer, "install.sh")
     installer_asset = find(r"^asset=(.+)$", installer, "install.sh")
 
+    stable_match = re.fullmatch(r"v(\d+\.\d+\.\d+)(?:-[A-Za-z0-9.-]+)?", installer_tag)
+    if not stable_match:
+        fail(f"cannot derive the current stable version from installer tag {installer_tag!r}")
+    stable_version = stable_match.group(1)
+
     if version not in lock["opencode"]:
-        fail(f"OpenCode {version} is not pinned in tools/supply-chain-lock.json")
+        fail(f"candidate OpenCode {version} is not pinned in tools/supply-chain-lock.json")
+    if stable_version not in lock["opencode"]:
+        fail(f"stable OpenCode {stable_version} is not pinned in tools/supply-chain-lock.json")
+    if lock["opencode"][version].get("bun_version") != "1.4.4":
+        fail(f"candidate OpenCode {version} does not select the Bun 1.4.4 runtime")
     if opentui_version not in lock["opentui"]:
         fail(f"OpenTUI {opentui_version} is not pinned in tools/supply-chain-lock.json")
     if lock["opentui"][opentui_version]["commit"] != opentui_commit:
         fail(f"OpenTUI {opentui_version} commit does not match the lock")
-    expected_release_tag = f"v{version}-bun144.1"
-    if build_release_tag != expected_release_tag:
-        fail(f"build TERMUX_RELEASE_TAG {build_release_tag!r} does not match {expected_release_tag!r}")
-    if release_tag != expected_release_tag:
-        fail(f"publish RELEASE_TAG {release_tag!r} does not match {expected_release_tag!r}")
-    if installer_tag != expected_release_tag:
-        fail(f"install.sh release_tag {installer_tag!r} does not match {expected_release_tag!r}")
-    expected_asset = f"opencode-{version}-android-aarch64-source-bun144-sourcegraph"
-    if asset != expected_asset:
-        fail(f"publish ASSET {asset!r} does not match {expected_asset!r}")
-    if installer_asset != expected_asset:
-        fail(f"install.sh asset {installer_asset!r} does not match {expected_asset!r}")
+    expected_candidate_tag = f"v{version}-bun144.1"
+    if build_release_tag != expected_candidate_tag:
+        fail(f"build TERMUX_RELEASE_TAG {build_release_tag!r} does not match {expected_candidate_tag!r}")
+    if release_tag != installer_tag:
+        fail(f"publish RELEASE_TAG {release_tag!r} differs from current installer tag {installer_tag!r}")
+    expected_stable_asset = f"opencode-{stable_version}-android-aarch64-source-bun144-sourcegraph"
+    if asset != expected_stable_asset:
+        fail(f"publish ASSET {asset!r} does not match current stable asset {expected_stable_asset!r}")
+    if installer_asset != expected_stable_asset:
+        fail(f"install.sh asset {installer_asset!r} does not match current stable asset {expected_stable_asset!r}")
     if "opencode-$OPENCODE_VERSION-android-aarch64-source-bun144-sourcegraph-candidate" not in publish:
         fail("publish workflow does not download the current candidate artifact")
     if '"$TERMUX_RELEASE_TAG"' not in sourcegraph or "--release-tag" not in sourcegraph:
         fail("Bun 1.4.4 build does not embed the current release installer URL")
     if "default: source-bun144-sourcegraph" not in build:
         fail("Bun 1.4.4 source-graph strategy must be the default build")
-    if f"OpenCode {version} for Termux" not in notes:
-        fail(f"RELEASE_NOTES.md does not describe OpenCode {version}")
-    if f"releases/tag/{expected_release_tag}" not in readme:
-        fail("README does not link to the current release page")
-    if f"raw/{expected_release_tag}/install.sh" not in readme:
-        fail("README install command does not use the current release installer")
-    if f"raw/v{version}/install.sh" not in readme or f"raw/v{version}/install.sh" not in notes:
-        fail("README and release notes must retain the v2.1.3 Bun 1.4.0 rollback")
+    if f"OpenCode {stable_version} for Termux" not in notes:
+        fail(f"RELEASE_NOTES.md does not describe current stable OpenCode {stable_version}")
+    if f"releases/tag/{installer_tag}" not in readme:
+        fail("README does not link to the current stable release page")
+    if f"raw/{installer_tag}/install.sh" not in readme or f"raw/{installer_tag}/install.sh" not in notes:
+        fail("README and release notes must use the current stable release installer")
+    if f"raw/v{stable_version}/install.sh" not in readme or f"raw/v{stable_version}/install.sh" not in notes:
+        fail(f"README and release notes must retain the v{stable_version} Bun 1.4.0 rollback")
 
-    patch_script = f"tools/patch-opentui-{opentui_version}.py"
+    compatible_patch_versions = {"0.6.6": {"0.6.6", "0.6.8"}}
+    if opentui_patch_version not in compatible_patch_versions or opentui_version not in compatible_patch_versions[opentui_patch_version]:
+        fail(f"OpenTUI {opentui_version} has no validated Android patch set {opentui_patch_version}")
+    patch_script = f"tools/patch-opentui-{opentui_patch_version}.py"
     if not (ROOT / patch_script).is_file():
         fail(f"missing version-locked renderer patch script: {patch_script}")
     for patch in (
-        f"patches/opentui/v{opentui_version}-file-prefix-map.patch",
-        f"patches/opentui/v{opentui_version}-tlsdesc-self-resolver.patch",
+        f"patches/opentui/v{opentui_patch_version}-file-prefix-map.patch",
+        f"patches/opentui/v{opentui_patch_version}-tlsdesc-self-resolver.patch",
     ):
         if not (ROOT / patch).is_file():
             fail(f"missing version-locked renderer patch: {patch}")
 
     print(
-        f"check-release-pins: OK (OpenCode {version}, OpenTUI {opentui_version}, "
-        f"tag {release_tag}, Bun 1.4.4 source-graph asset)"
+        f"check-release-pins: OK (candidate OpenCode {version}, OpenTUI {opentui_version} "
+        f"with Android patch set {opentui_patch_version}; "
+        f"stable tag {installer_tag})"
     )
     return 0
 

@@ -196,7 +196,7 @@ fn addTranslatedCImports(
     for path, marker in required:
         if marker not in path.read_text(encoding="utf-8"):
             raise SystemExit(f"patch-opentui: missing postcondition in {path}: {marker}")
-    print("patch-opentui: OpenTUI 0.6.6 Android guards applied")
+    print("patch-opentui: OpenTUI 0.6.6-compatible Android guards applied")
     return 0
 
 

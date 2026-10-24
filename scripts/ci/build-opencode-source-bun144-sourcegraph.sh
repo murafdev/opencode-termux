@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Runtime-test candidate: build OpenCode 2.1.3 with Bun 1.4.4, but leave
+# Runtime-test candidate: build pinned OpenCode source with Bun 1.4.4, but leave
 # JavaScript source (not target-specific bytecode) in the graph before grafting
 # it onto the official Android/Bionic Bun 1.4.4 runtime.
 #
@@ -68,21 +68,22 @@ python3 tools/patch-opencode-source-bun140.py \
   "$src" --bun-version 1.4.4 --disable-bytecode \
   --release-tag "$TERMUX_RELEASE_TAG"
 
-python3 - "$WORK/build-variant.json" "$commit" "$TERMUX_RELEASE_TAG" <<'PY'
+python3 - "$WORK/build-variant.json" "$commit" "$TERMUX_RELEASE_TAG" "$OPENCODE_VERSION" <<'PY'
 import json
 import sys
 
 with open(sys.argv[1], "w", encoding="utf-8") as f:
     json.dump(
         {
-            "candidate": "diagnostic-only",
+            "candidate": "runtime-test",
             "host_bun": "1.4.4 Linux x64",
             "target_graph": "bun-linux-arm64",
             "android_runtime": "1.4.4 aarch64 Bionic",
             "bytecode": False,
             "opencode_commit": sys.argv[2],
             "termux_release_tag": sys.argv[3],
-            "purpose": "Compare source-mode graph transplant with the bytecode candidate",
+            "opencode_version": sys.argv[4],
+            "purpose": f"Device-test OpenCode {sys.argv[4]} on Android/Bionic Bun 1.4.4",
         },
         f,
         indent=2,

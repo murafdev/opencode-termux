@@ -41,7 +41,7 @@ def main() -> None:
     package = root / "package.json"
     metadata = json.loads(package.read_text(encoding="utf-8"))
     manager = metadata.get("packageManager")
-    # OpenCode 2.1.3 pins bun@1.4.4 upstream. Callers select the matching
+    # OpenCode 2.1.3 and 2.1.4 pin bun@1.4.4 upstream. Callers select the
     # host toolchain/runtime explicitly; 1.4.0 remains available for rollback.
     if manager not in ("bun@1.4.4", "bun@1.4.2"):
         raise SystemExit(f"unexpected packageManager: {manager!r}")

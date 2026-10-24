@@ -19,6 +19,11 @@
       "commit": "bb25a2f4a3f3f04d7c344bec0c0574ea3510b3b1",
       "bun_version": "1.4.0",
       "upstream_bun_version": "1.4.4"
+    },
+    "2.1.4": {
+      "commit": "68bc26b7da1990ce10ffecfbc1e09eb13aa5d824",
+      "bun_version": "1.4.4",
+      "upstream_bun_version": "1.4.4"
     }
   },
   "android_bun": {
@@ -51,6 +56,11 @@
     },
     "0.6.6": {
       "commit": "212eb27da4adf5b907031ad153fc6a5b9f713fbf",
+      "zig_version": "0.16.0",
+      "zig_x86_64_linux_sha256": "70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00"
+    },
+    "0.6.8": {
+      "commit": "8d6065a3e60039d16c6ee697692dcfbc46d3c786",
       "zig_version": "0.16.0",
       "zig_x86_64_linux_sha256": "70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00"
     }
