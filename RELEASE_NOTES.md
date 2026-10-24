@@ -30,6 +30,6 @@ The v2.1.2 release is also retained. Back up OpenCode data before downgrading if
 
 ## Provenance and testing
 
-This release is published from a successful GitHub Actions artifact, not from a phone-side build. The source candidate is [Actions run 40054752500](https://github.com/murafdev/opencode-termux/actions/runs/40054752500); its binary SHA-256 is `a66712db76ce82d9156cffc5ae823ef2c9f6feacec4910da3e8dc1ebcdd7d757`. The attached `SHA256SUMS`, supply-chain lock, build-variant metadata, and transplant report record the artifact and pinned inputs.
+This release is published from a successful GitHub Actions artifact, not from a phone-side build. The source candidate is [Actions run 40062665076](https://github.com/murafdev/opencode-termux/actions/runs/40062665076); its binary SHA-256 is `22291b8f0d0951d8c8608de7f2800e51d6bfd715e2f24f6e1a4c264de5fa8594`. The attached `SHA256SUMS`, supply-chain lock, build-variant metadata, and transplant report record the artifact and pinned inputs.
 
 On one Android/Termux device, this exact candidate passed `--version`, interactive TUI startup, and one real provider prompt. The Linux CI runner could verify the build and transplant but skipped its runtime TUI probe because it was not AArch64. These results are single-device validation, not a claim of multi-device coverage; please report device-specific problems.
