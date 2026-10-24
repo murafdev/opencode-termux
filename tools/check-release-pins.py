@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Check the native candidate pins while keeping the published release stable.
+"""Check native candidate pins and the release-facing version pins.
 
 The candidate may advance before install.sh, README, and the publisher workflow
 are promoted. This check verifies both sets independently so a test build does
-not accidentally redirect users to an unpublished release.
+not accidentally redirect users to an unpublished release or stale artifact.
 """
 
 import json
@@ -86,8 +86,13 @@ def main() -> int:
         fail("README does not link to the current stable release page")
     if f"raw/{installer_tag}/install.sh" not in readme or f"raw/{installer_tag}/install.sh" not in notes:
         fail("README and release notes must use the current stable release installer")
-    if f"raw/v{stable_version}/install.sh" not in readme or f"raw/v{stable_version}/install.sh" not in notes:
-        fail(f"README and release notes must retain the v{stable_version} Bun 1.4.0 rollback")
+    for rollback_tag in ("v2.1.3-bun144.1", "v2.1.3"):
+        rollback_installer = f"raw/{rollback_tag}/install.sh"
+        if rollback_installer not in readme or rollback_installer not in notes:
+            fail(f"README and release notes must retain the {rollback_tag} rollback installer")
+    for tag in ("v2.1.3-bun144.1", "v2.1.3"):
+        if tag not in publish:
+            fail(f"publish workflow must preserve and annotate rollback release {tag}")
 
     compatible_patch_versions = {"0.6.6": {"0.6.6", "0.6.8"}}
     if opentui_patch_version not in compatible_patch_versions or opentui_version not in compatible_patch_versions[opentui_patch_version]:
@@ -105,7 +110,7 @@ def main() -> int:
     print(
         f"check-release-pins: OK (candidate OpenCode {version}, OpenTUI {opentui_version} "
         f"with Android patch set {opentui_patch_version}; "
-        f"stable tag {installer_tag})"
+        f"release tag {installer_tag})"
     )
     return 0
 

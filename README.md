@@ -2,7 +2,7 @@
 
 [OpenCode](https://opencode.ai) is an AI-powered terminal coding assistant. This project ships it as a native Android/aarch64 Bionic binary for [Termux](https://termux.dev): no PRoot, no glibc.
 
-This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux). The latest Termux build runs OpenCode **2.1.3** on Android/Bionic Bun **1.4.4** with OpenTUI 0.6.6, including the Android 11+ heap-pointer-tagging fix and Google Play Termux startup support. The previous v2.1.3 Bun 1.4.0 release is preserved as a one-command rollback.
+This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux). The latest Termux build runs OpenCode **2.1.4** on Android/Bionic Bun **1.4.4** with OpenTUI 0.6.8, including the Android 11+ heap-pointer-tagging fix and Google Play Termux startup support. Both OpenCode 2.1.3 builds (Bun 1.4.4 and the original Bun 1.4.0) are preserved as rollback options.
 
 ## Requirements
 
@@ -15,7 +15,7 @@ This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/
 In Termux:
 
 ```sh
-curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.3-bun144.1/install.sh | sh
+curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.4-bun144.1/install.sh | sh
 ```
 
 The installer downloads the [GitHub release](https://github.com/murafdev/opencode-termux/releases) archive, checks both the archive and the extracted binary against the release checksum file, and installs the binary as `~/.local/bin/opencode`. It does not silently edit your shell startup files.
@@ -38,17 +38,23 @@ command -v opencode
 opencode --version
 ```
 
-Expected version: `2.1.3`.
+Expected version: `2.1.4`.
 
-### Rollback to the previous Bun 1.4.0 build
+### Rollback to either OpenCode 2.1.3 build
 
-The existing `v2.1.3` release and its assets remain unchanged. It contains the same OpenCode 2.1.3 app on the previously verified Bun 1.4.0 runtime. If the Bun 1.4.4 build causes a problem, restore it with:
+Both previous 2.1.3 releases remain available. For the previous Bun 1.4.4 build, run:
+
+```sh
+curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.3-bun144.1/install.sh | sh
+```
+
+To return to the original Bun 1.4.0 build instead, run:
 
 ```sh
 curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.3/install.sh | sh
 ```
 
-That installer is pinned to the original v2.1.3 Bun 1.4.0 asset and checksum. The older v2.1.2 release is also retained. Back up your OpenCode data before downgrading in case a future OpenCode version migrates the session database.
+The older v2.1.2 release is also retained. Back up your OpenCode data before downgrading in case a future OpenCode version migrates the session database.
 
 ### Shared storage and project files
 
@@ -73,7 +79,7 @@ No apt/pacman package for this build has been published by this project.
 
 ### Android 11+ pointer tagging
 
-Android 11 and newer tag 64-bit heap pointers in the top byte. OpenTUI `0.6.6` converts native pointers to JavaScript numbers and rejects addresses above `Number.MAX_SAFE_INTEGER`, which aborted TUI startup with `Pointer exceeds safe integer range`. This build's renderer library disables heap tagging as soon as it loads, so the context handle and later allocations reach JavaScript untagged. No wrapper script or extra library is installed.
+Android 11 and newer tag 64-bit heap pointers in the top byte. OpenTUI `0.6.8` converts native pointers to JavaScript numbers and rejects addresses above `Number.MAX_SAFE_INTEGER`, which aborted TUI startup with `Pointer exceeds safe integer range`. This build's renderer library disables heap tagging as soon as it loads, so the context handle and later allocations reach JavaScript untagged. No wrapper script or extra library is installed.
 
 ### Google Play Termux
 
@@ -106,9 +112,9 @@ The current build is produced from pinned source in GitHub Actions, not uploaded
 
 ## Releases and provenance
 
-The latest release is [v2.1.3-bun144.1](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3-bun144.1): OpenCode 2.1.3 on Android/Bionic Bun 1.4.4 with the Bionic OpenTUI 0.6.6 renderer. It was confirmed on one Android device for `--version`, interactive TUI rendering, and one real provider response; broader device coverage is still welcome. If it misbehaves, roll back to the still-published [v2.1.3 Bun 1.4.0 build](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3), or to [v2.1.2](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.2).
+The latest release is [v2.1.4-bun144.1](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.4-bun144.1): OpenCode 2.1.4 on Android/Bionic Bun 1.4.4 with the Bionic OpenTUI 0.6.8 renderer. The exact CI artifact passed `--version`, interactive TUI, and a real provider prompt on one Android device; broader device coverage is still welcome. Both [v2.1.3 Bun 1.4.4](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3-bun144.1) and the original [v2.1.3 Bun 1.4.0](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3) remain available for rollback, as does [v2.1.2](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.2).
 
-The [build workflow](.github/workflows/build-native-android.yml) produces the Bun 1.4.4 source-graph candidate. After device testing, the [release workflow](.github/workflows/publish-native-android.yml) downloads that CI artifact, verifies its hashes and transplant report, then publishes it; the phone's local copy is never uploaded. The CI runner skipped its Android runtime probe because it is not AArch64, so the on-device checks are reported separately. [Build inputs](tools/supply-chain-lock.json) are pinned to specific versions, hashes, or commits. Releases are manual, not weekly automatic updates.
+The [build workflow](.github/workflows/build-native-android.yml) builds the Bun 1.4.4 source graph. The [release workflow](.github/workflows/publish-native-android.yml) downloads the tested CI artifact, verifies its hashes and transplant report, then publishes it; the phone's local copy is never uploaded. The CI runner skipped its Android runtime probe because it is not AArch64, so the on-device checks are reported separately. [Build inputs](tools/supply-chain-lock.json) are pinned to specific versions, hashes, or commits. Releases are manual, not weekly automatic updates.
 
 This project is derived from [Hope2333/opencode-termux](https://github.com/Hope2333/opencode-termux) via [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux); OpenCode itself is [upstream](https://github.com/anomalyco/opencode). Older docs in this repository describe upstream package lines and may not apply to this release. See [LICENSE](LICENSE) for this repository; dependencies retain their own licenses.
 
