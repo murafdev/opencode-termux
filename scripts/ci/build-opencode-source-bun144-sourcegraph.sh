@@ -67,6 +67,7 @@ test "$(git -C "$src" rev-parse HEAD)" = "$commit"
 python3 tools/patch-opencode-source-bun140.py \
   "$src" --bun-version 1.4.4 --disable-bytecode \
   --release-tag "$TERMUX_RELEASE_TAG"
+python3 tools/patch-opencode-config-guards.py "$src"
 
 python3 - "$WORK/build-variant.json" "$commit" "$TERMUX_RELEASE_TAG" "$OPENCODE_VERSION" <<'PY'
 import json

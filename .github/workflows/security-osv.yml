@@ -1,0 +1,109 @@
+name: Security (OSV)
+
+# Scans the pinned upstream lockfile for advisories in the production closure of
+# the shipped CLI. Dev-only workspaces are intentionally out of scope; see
+# security/README.md for the baseline policy. Scheduled because OSV advisories
+# change independently of repository commits.
+
+on:
+  schedule:
+    - cron: "17 4 * * 1"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/security-osv.yml"
+      - "security/**"
+      - "tools/check-osv.py"
+      - "tools/supply-chain-lock.json"
+
+permissions:
+  contents: read
+
+env:
+  OPENCODE_VERSION: "2.1.4"
+
+jobs:
+  osv:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Fetch workflow commit without broken submodules
+        run: |
+          set -euo pipefail
+          git init .
+          git remote add origin "https://github.com/$GITHUB_REPOSITORY.git"
+          git fetch --depth=1 origin "$GITHUB_SHA"
+          git checkout --detach FETCH_HEAD
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+      - name: Install hash-pinned osv-scanner
+        run: |
+          set -euo pipefail
+          readarray -t scanner < <(python3 - <<'PY'
+          import json
+
+          lock = json.load(open("tools/supply-chain-lock.json", encoding="utf-8"))
+          version, pin = next(iter(lock["osv-scanner"].items()))
+          print(version)
+          print(pin["linux_amd64_sha256"])
+          PY
+          )
+          osv_version="${scanner[0]}"
+          osv_sha256="${scanner[1]}"
+          mkdir -p "$RUNNER_TEMP/osv-bin"
+          curl -fsSL --retry 3 \
+            -o "$RUNNER_TEMP/osv-bin/osv-scanner" \
+            "https://github.com/google/osv-scanner/releases/download/v$osv_version/osv-scanner_linux_amd64"
+          printf '%s  %s\n' "$osv_sha256" "$RUNNER_TEMP/osv-bin/osv-scanner" | sha256sum -c -
+          chmod 755 "$RUNNER_TEMP/osv-bin/osv-scanner"
+          echo "$RUNNER_TEMP/osv-bin" >> "$GITHUB_PATH"
+
+      - name: Fetch pinned upstream lockfile
+        run: |
+          set -euo pipefail
+          readarray -t upstream < <(python3 - <<'PY'
+          import json
+          import os
+
+          lock = json.load(open("tools/supply-chain-lock.json", encoding="utf-8"))
+          pin = lock["opencode"][os.environ["OPENCODE_VERSION"]]
+          print(pin["commit"])
+          print(pin["lockfile_sha256"])
+          PY
+          )
+          commit="${upstream[0]}"
+          lockfile_sha256="${upstream[1]}"
+          mkdir -p security-input
+          curl -fsSL --retry 3 \
+            -o security-input/bun.lock \
+            "https://raw.githubusercontent.com/anomalyco/opencode/$commit/bun.lock"
+          printf '%s  %s\n' "$lockfile_sha256" security-input/bun.lock | sha256sum -c -
+          echo "UPSTREAM_LOCK_SHA256=$lockfile_sha256" >> "$GITHUB_ENV"
+
+      - name: Scan the pinned lockfile
+        run: |
+          set -euo pipefail
+          status=0
+          osv-scanner scan source --lockfile security-input/bun.lock --format json > osv-scan.json || status=$?
+          case "$status" in
+            0) echo "osv-scanner: no advisories reported" ;;
+            1) echo "osv-scanner: advisories reported; applying the production-closure baseline" ;;
+            *) echo "osv-scanner failed with exit code $status" >&2; exit "$status" ;;
+          esac
+
+      - name: Enforce the production-closure baseline
+        run: |
+          set -euo pipefail
+          python3 tools/check-osv.py \
+            --lockfile security-input/bun.lock \
+            --scan osv-scan.json \
+            --expect-sha256 "$UPSTREAM_LOCK_SHA256"
+
+      - name: Upload scan report
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: osv-scan
+          path: osv-scan.json
+          if-no-files-found: ignore
+          retention-days: 14

@@ -5,6 +5,9 @@ This directory is the single source of truth for the current Termux packing/runt
 ## Start here
 
 - `native-v2-build.md` — current fork's Android local-build status and GitHub Actions path
+- `../security/README.md` — OSV production-closure gate and expiring baseline policy
+- `../security/deferred-hardening.md` — accepted residual risk, dependency-bump path, Bun RELRO/BIND_NOW status
+- `upstream-opencode-guards.md` — ready-to-file upstream PR for the config-parsing guards (threat model, repro, dependency asks)
 - `../.github/workflows/build-native-android.yml` — opt-in runtime diagnostics, including paired minimal Bun 1.4.4 transplant/direct-build controls; diagnostic artifacts are not releases
 - `execution-checklist.md` — install/test runbook (default Termux apt first, pacman path second)
 - `skills-index.md` — concise index for prompts + quick fixes

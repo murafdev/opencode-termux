@@ -23,7 +23,8 @@
     "2.1.4": {
       "commit": "68bc26b7da1990ce10ffecfbc1e09eb13aa5d824",
       "bun_version": "1.4.4",
-      "upstream_bun_version": "1.4.4"
+      "upstream_bun_version": "1.4.4",
+      "lockfile_sha256": "47359ba0731b02d14b9a93a6b71b2db104cf9b9716ab0b6371fe96f02c6d71b2"
     }
   },
   "android_bun": {
@@ -47,6 +48,18 @@
   "source_build_bun_1_4_4": {
     "linux_x64_archive_sha256": "bf8ccbfb2b0b80159e0f9a6d15c55317add8077534dbc6130a3edb52fccb395c",
     "linux_aarch64_archive_sha256": "baa6bb36f51d6e58561e02bbea825038a9df454f673d6d776e8bbf86f8c7850e"
+  },
+  "cosign": {
+    "3.1.4": {
+      "linux_amd64_sha256": "424e2c97d0b45fd7a6b608a87f090f35633f4c23ece5f092d48bba11aaf4bbfa",
+      "linux_arm64_sha256": "ade83b7aac62e131cacfe96d958948b2150cc9efec46a570a2649b8e27dedad2"
+    }
+  },
+  "osv-scanner": {
+    "2.7.0": {
+      "linux_amd64_sha256": "160c6253e2922e9e0a6a9771c5c4c40a4b3c6090b34a3cdd5e80c96cc2e4218b",
+      "linux_arm64_sha256": "4061ef4c021ed3c47f203b818f337e351336cc5cd67c0274fc36bd1dfc728dd7"
+    }
   },
   "opentui": {
     "0.5.17": {

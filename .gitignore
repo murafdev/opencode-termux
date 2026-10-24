@@ -38,6 +38,10 @@ tests/vendor/
 # Python bytecode
 tools/transplant/__pycache__/
 
+# OSV gate scratch files
+security-input/
+osv-scan.json
+
 # session/work dirs with local-only content
 .opencode-dream/
 .claude/

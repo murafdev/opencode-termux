@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "description": "Critical/high OSV advisories in the shipped OpenCode CLI closure that cannot be fixed without an upstream dependency bump. Every entry needs a reason and an expiry; the gate fails when an expiry passes while the advisory is still reachable.",
+  "scope": {
+    "root": "@opencode/cli",
+    "rationale": "Production dependency closure of the CLI that the native Termux build bundles. Dev-only workspaces and tooling are out of scope."
+  },
+  "entries": [
+    {
+      "package": "seroval",
+      "version": "1.5.6",
+      "advisories": ["GHSA-p6vx-979v-rg4c", "GHSA-jp82-f5mq-hwhp"],
+      "reason": "solid-js SSR/hydration serializer. Audit bundle extraction confirmed seroval is absent from the shipped CLI. Fixed in seroval 1.6.3; the pinned solid-js resolution requires an upstream bump.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "brace-expansion",
+      "version": "2.1.4",
+      "advisories": ["GHSA-6j4f-fj2g-mc7p", "GHSA-qhr7-859c-m2p7"],
+      "reason": "Reached through build/install-time glob expansion (babel-plugin-module-resolver -> glob -> minimatch). The process-instruction guard rejects amplified patterns before expansion, whichever minimatch copy handles them. Fix requires an upstream lockfile refresh.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "brace-expansion",
+      "version": "5.0.9",
+      "advisories": ["GHSA-6j4f-fj2g-mc7p", "GHSA-qhr7-859c-m2p7"],
+      "reason": "This copy expands project `instructions` globs at startup, so the call-site budget in instruction.ts rejects amplified patterns before expansion. Fixed in 5.0.12, which is within minimatch's range; a lockfile refresh upstream clears it.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "http-cache-semantics",
+      "version": "4.2.0",
+      "advisories": ["GHSA-ch52-4w7c-c8xp"],
+      "reason": "Install-time npm registry cache logic via @npmcli/arborist -> npm-registry-fetch. Not part of the shipped CLI bundle, and OSV lists no fixed release. Re-evaluate when arborist updates.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "js-yaml",
+      "version": "3.15.1",
+      "advisories": ["GHSA-2883-xcg3-v3hh"],
+      "reason": "Runtime frontmatter parsing via gray-matter, bounded by the 64 KiB frontmatter budget applied by the config guard. Fixed in js-yaml 3.15.2, but gray-matter pins the 3.x line and the fix needs an upstream bump. Re-evaluate at expiry.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "undici",
+      "version": "6.28.0",
+      "advisories": ["GHSA-rfgv-xxqx-mfg5", "GHSA-xjj6-f33q-929c"],
+      "reason": "Reached only through install-time node-gyp tooling. Under Bun, bare `undici` imports resolve to the runtime builtin rather than this npm copy. Fix requires an upstream lockfile refresh.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "undici",
+      "version": "8.11.2",
+      "advisories": ["GHSA-xjj6-f33q-929c"],
+      "reason": "@effect/platform-node Node HTTP fallback. Bun resolves the bare `undici` specifier to its own builtin, so the compiled CLI never loads this npm copy. Fix requires an upstream @effect/platform-node refresh.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "zod",
+      "version": "3.25.76",
+      "advisories": ["GHSA-mrhx-c7xc-m3w5"],
+      "reason": "Pinned transitively by gitlab-ai-provider. Fixed in zod 4.6.6, which is outside the provider's supported range; requires an upstream bump.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "zod",
+      "version": "4.1.8",
+      "advisories": ["GHSA-mrhx-c7xc-m3w5"],
+      "reason": "Pinned by @opencode/core in the upstream 2.1.4 lockfile. Fixed in zod 4.6.6; requires an upstream dependency bump.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "zod",
+      "version": "4.4.3",
+      "advisories": ["GHSA-mrhx-c7xc-m3w5"],
+      "reason": "Pinned transitively by @modelcontextprotocol/client. Fixed in zod 4.6.6, which is outside the client's supported range; requires an upstream bump.",
+      "expires": "2027-01-31"
+    }
+  ]
+}

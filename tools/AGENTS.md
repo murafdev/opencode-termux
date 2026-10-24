@@ -11,6 +11,7 @@
 | Plugin install/update/rollback | `plugin-manager.sh` | snapshot-first mutation model + retry/backoff + state file |
 | Environment/plugin diagnostics | `plugin-selfcheck.sh` | read-only JSON checks for config/plugins/skills |
 | Upgrade/downgrade lifecycle tests | `upgrade-matrix.sh` | cached deb distribution + remote install/upgrade/downgrade simulation |
+| OSV production-closure gate | `check-osv.py` | resolves the shipped CLI closure from `bun.lock`; enforces `security/osv-baseline.json` |
 
 ## CONVENTIONS
 - Preserve CLI compatibility: additive flags, stable defaults, and clear `usage` blocks.
@@ -40,4 +41,7 @@
 # diagnostics + matrix
 ./tools/plugin-selfcheck.sh
 VERS='1.2.9 1.2.10' ./tools/upgrade-matrix.sh
+
+# dependency gate (after producing scan.json with osv-scanner)
+python3 tools/check-osv.py --lockfile bun.lock --scan scan.json
 ```

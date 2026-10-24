@@ -23,6 +23,7 @@ opencode-termux/
 ├── tools/                      # operator-facing CLIs (make wrapper, plugin lifecycle, matrix)
 ├── packing/                  # package templates + manifests (mixed with generated outputs)
 ├── docs/                       # canonical runbooks, architecture notes, incident records (e.g. docs/transplant.md)
+├── security/                   # OSV gate policy + expiring advisory baseline
 ├── artifacts/                  # generated runtime/staging outputs (disposable)
 └── .github/workflows/          # CI handoff workflows
 ```
@@ -43,6 +44,9 @@ opencode-termux/
 | Transplant 管线 | `tools/transplant/transplant.py` | 原生 android Bun 拼接 + ELF 复活手术（C1 已复活，见 `docs/transplant.md`） |
 | Native Android CI diagnostics | `.github/workflows/build-native-android.yml`, `scripts/ci/build-minimal-bun144-transplant.sh` | opt-in runtime-test candidate workflow; artifacts are diagnostic-only |
 | CI armv7 handoff | `.github/workflows/prebuild-armv7.yml`, `scripts/ci/*` | attempt-based build evidence, not final Termux release path |
+| Dependency vulnerability gate | `tools/check-osv.py`, `security/osv-baseline.json`, `.github/workflows/security-osv.yml` | scans the pinned upstream lockfile's `@opencode/cli` closure; critical/high findings need an expiring, justified suppression |
+| Accepted residual risk | `security/deferred-hardening.md` | per-suppression reachability, below-threshold inventory, Bun RELRO/BIND_NOW status |
+| Upstream guard submission | `docs/upstream-opencode-guards.md`, `patches/opencode/` | ready-to-file PR text + generated diffs for the config-parsing budgets |
 
 ## CODE MAP
 | Symbol | Type | Location | Refs | Role |
@@ -92,3 +96,14 @@ make matrix VERS='1.2.9 1.2.10' TARGET_HOST=192.168.1.22 TARGET_USER=u0_a258
 ## NOTES
 - `packing/` (default outputs) and `packing/` (templates/manifests) are different; keep them conceptually separate.
 - When adding new workflow-critical scripts, update both `docs/README.md` navigation and this root map.
+
+<!-- CODEGRAPH_START -->
+## CodeGraph
+
+In repositories indexed by CodeGraph (a `.codegraph/` directory exists at the repo root), reach for it BEFORE grep/find or reading files when you need to understand or locate code:
+
+- **MCP tool** (when available): `codegraph_explore` answers most code questions in one call — the relevant symbols' verbatim source plus the call paths between them, including dynamic-dispatch hops grep can't follow. Name a file or symbol in the query to read its current line-numbered source. If it's listed but deferred, load it by name via tool search.
+- **Shell** (always works): `codegraph explore "<symbol names or question>"` prints the same output.
+
+If there is no `.codegraph/` directory, skip CodeGraph entirely — indexing is the user's decision.
+<!-- CODEGRAPH_END -->

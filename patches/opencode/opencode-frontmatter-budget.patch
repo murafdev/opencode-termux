@@ -1,0 +1,30 @@
+--- a/packages/core/src/config/markdown.ts
++++ b/packages/core/src/config/markdown.ts
+@@ -1,7 +1,27 @@
+ export * as ConfigMarkdown from "./markdown.js"
+ 
+ import matter from "gray-matter"
++// #region opencode-termux:frontmatter-budget
++// Project markdown frontmatter is attacker-controlled when a checkout is
++// opened from an untrusted source. Cap the work handed to js-yaml: a very
++// large block or many `<<` merge keys amplifies CPU use (CVE-2026-84375).
++const MAX_FRONTMATTER_CHARS = 64 * 1024
++const MAX_MERGE_KEYS = 32
++
++function frontmatterBudget(content: string): void {
++  const block = content.match(/^---\r?\n([\s\S]*?)\r?\n---/)
++  if (!block) return
++  const frontmatter = block[1] ?? ""
++  if (frontmatter.length > MAX_FRONTMATTER_CHARS)
++    throw new Error(`frontmatter exceeds ${MAX_FRONTMATTER_CHARS} characters`)
++  const merges = frontmatter.match(/^\s*(?:-\s*)?<<\s*:/gm)
++  if (merges && merges.length > MAX_MERGE_KEYS)
++    throw new Error(`frontmatter exceeds ${MAX_MERGE_KEYS} merge keys`)
++}
++// #endregion opencode-termux:frontmatter-budget
++
+ export function parse(content: string) {
++  frontmatterBudget(content)
+   // Passing options bypasses gray-matter's module-global content cache, which
+   // it populates before parsing: a failed YAML parse poisons the entry and
+   // every later parse of the same content replays it without throwing, so the

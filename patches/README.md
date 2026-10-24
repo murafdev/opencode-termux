@@ -21,3 +21,11 @@ bun run build --target=linux-arm64  # produces opencode-linux-arm64
 
 The patches produce a standard `bun build --compile` output. The binary is then
 wrapped for Android using bun-termux-loader (in CI or locally).
+
+## Upstream submission patches
+
+`opencode/` holds diffs that are **not** part of the Android patch set. They are
+generated from `tools/patch-opencode-config-guards.py` for filing upstream:
+config-parsing budgets for untrusted frontmatter and instruction globs. See
+`opencode/README.md` and `docs/upstream-opencode-guards.md`. Do not apply them
+on top of a source tree that the build script already patches.

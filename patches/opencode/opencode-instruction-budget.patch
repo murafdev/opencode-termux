@@ -1,0 +1,74 @@
+--- a/packages/core/src/config/plugin/instruction.ts
++++ b/packages/core/src/config/plugin/instruction.ts
+@@ -16,6 +16,55 @@
+ type Loaded =
+   | { readonly type: "available"; readonly files: InstructionDiscovery.File[] }
+   | { readonly type: "unavailable" }
++
++// #region opencode-termux:instruction-budget
++// Instruction globs come from project config. Without a budget, brace
++// expansion can recurse without bound or produce a combinatorial number of
++// alternatives during startup (CVE-2026-102276 / 102277 / 102278).
++const INSTRUCTION_PATTERN_LIMIT = 1024
++const INSTRUCTION_DEPTH_LIMIT = 8
++const INSTRUCTION_GROUP_LIMIT = 32
++const INSTRUCTION_COMMA_LIMIT = 32
++const INSTRUCTION_EXPANSION_LIMIT = 256
++const INSTRUCTION_RANGE_LIMIT = 4096
++
++function unsafeInstructionPattern(pattern: string): boolean {
++  if (pattern.length > INSTRUCTION_PATTERN_LIMIT) return true
++  // `{1..1000000}` is short but expands to a million entries.
++  for (const range of pattern.match(/\{(-?\d+)\.\.(-?\d+)(?:\.\.(-?\d+))?\}/g) ?? []) {
++    const parts = range.match(/\{(-?\d+)\.\.(-?\d+)(?:\.\.(-?\d+))?\}/)
++    if (!parts) continue
++    const span = Math.abs(Number(parts[2]) - Number(parts[1]))
++    const stride = Math.abs(Number(parts[3])) || 1
++    if (span / stride > INSTRUCTION_RANGE_LIMIT) return true
++  }
++  let depth = 0
++  let groups = 0
++  let commas = 0
++  let expansions = 1
++  let alternatives = 1
++  for (const char of pattern) {
++    if (char === "{") {
++      depth += 1
++      groups += 1
++      if (depth > INSTRUCTION_DEPTH_LIMIT || groups > INSTRUCTION_GROUP_LIMIT) return true
++      alternatives = 1
++    } else if (char === ",") {
++      commas += 1
++      if (commas > INSTRUCTION_COMMA_LIMIT) return true
++      if (depth > 0) alternatives += 1
++    } else if (char === "}") {
++      // A stray or unclosed brace is literal for minimatch; only count groups.
++      if (depth === 0) continue
++      depth -= 1
++      expansions *= alternatives
++      if (expansions > INSTRUCTION_EXPANSION_LIMIT) return true
++      alternatives = 1
++    }
++  }
++  return false
++}
++// #endregion opencode-termux:instruction-budget
+ 
+ export const Plugin = define({
+   id: "opencode.config.instruction",
+@@ -98,6 +147,15 @@
+       const match = Effect.fn("ConfigInstructionPlugin.match")(function* (source: string) {
+         const expanded = source.startsWith("~/") ? path.join(global.home, source.slice(2)) : source
+         const options = { absolute: true, include: "file", dot: true } as const
++        // opencode-termux:instruction-budget-call
++        if (unsafeInstructionPattern(path.isAbsolute(expanded) ? path.basename(expanded) : expanded)) {
++          yield* Effect.logDebug("instruction pattern skipped", {
++            pattern: source.slice(0, 64),
++            length: source.length,
++            reason: "expansion-budget",
++          })
++          return []
++        }
+         if (path.isAbsolute(expanded))
+           return yield* fs
+             .scan(path.basename(expanded), { ...options, cwd: path.dirname(expanded) })

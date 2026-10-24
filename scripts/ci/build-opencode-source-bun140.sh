@@ -59,6 +59,7 @@ git -C "$src" fetch --depth=1 origin "$commit"
 git -C "$src" checkout --detach FETCH_HEAD
 test "$(git -C "$src" rev-parse HEAD)" = "$commit"
 python3 tools/patch-opencode-source-bun140.py "$src"
+python3 tools/patch-opencode-config-guards.py "$src"
 
 cd "$src"
 "$host_bun" install --frozen-lockfile --ignore-scripts --os=linux --cpu='*'

@@ -8,17 +8,19 @@ This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/
 
 - Termux on an Android/aarch64 device running Android 9 (API 28) or newer.
 - About 500 MiB free during installation for download, extraction, and atomic replacement; the installed Bun 1.4.4 binary is about 185 MiB. The exact archive size and checksums are listed on the release page.
-- `curl` and `sha256sum` in Termux. No Node.js, npm, root, or PRoot is needed to run it.
+- `curl` and `sha256sum` in Termux. `cosign` is optional and enables Sigstore signature verification. No Node.js, npm, root, or PRoot is needed to run it.
 
 ## Install
 
 In Termux:
 
 ```sh
-curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.4-bun144.1/install.sh | sh
+curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.1.4-bun144.2/install.sh | sh
 ```
 
 The installer downloads the [GitHub release](https://github.com/murafdev/opencode-termux/releases) archive, checks both the archive and the extracted binary against the release checksum file, and installs the binary as `~/.local/bin/opencode`. It does not silently edit your shell startup files.
+
+When `cosign` is on `PATH`, the installer also verifies the keyless Sigstore bundles attached to `SHA256SUMS` and the archive. Verification is pinned to the `publish-native-android.yml` workflow certificate identity, the `murafdev/opencode-termux` repository, and GitHub's OIDC issuer, so a signature from another workflow or repository is rejected. Without `cosign` the installer prints a warning and continues; set `OPENCODE_REQUIRE_SIGNATURE=1` to make a missing or invalid signature fatal.
 
 ### Add `opencode` to PATH
 
@@ -112,7 +114,7 @@ The current build is produced from pinned source in GitHub Actions, not uploaded
 
 ## Releases and provenance
 
-The latest release is [v2.1.4-bun144.1](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.4-bun144.1): OpenCode 2.1.4 on Android/Bionic Bun 1.4.4 with the Bionic OpenTUI 0.6.8 renderer. The exact CI artifact passed `--version`, interactive TUI, and a real provider prompt on one Android device; broader device coverage is still welcome. Both [v2.1.3 Bun 1.4.4](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3-bun144.1) and the original [v2.1.3 Bun 1.4.0](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3) remain available for rollback, as does [v2.1.2](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.2).
+The latest release is [v2.1.4-bun144.2](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.4-bun144.2): OpenCode 2.1.4 on Android/Bionic Bun 1.4.4 with the Bionic OpenTUI 0.6.8 renderer. The exact CI artifact passed `--version`, interactive TUI, and a real provider prompt on one Android device; broader device coverage is still welcome. Both [v2.1.3 Bun 1.4.4](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3-bun144.1) and the original [v2.1.3 Bun 1.4.0](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.3) remain available for rollback, as does [v2.1.2](https://github.com/murafdev/opencode-termux/releases/tag/v2.1.2).
 
 The [build workflow](.github/workflows/build-native-android.yml) builds the Bun 1.4.4 source graph. The [release workflow](.github/workflows/publish-native-android.yml) downloads the tested CI artifact, verifies its hashes and transplant report, then publishes it; the phone's local copy is never uploaded. The CI runner skipped its Android runtime probe because it is not AArch64, so the on-device checks are reported separately. [Build inputs](tools/supply-chain-lock.json) are pinned to specific versions, hashes, or commits. Releases are manual, not weekly automatic updates.
 
