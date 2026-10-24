@@ -48,6 +48,9 @@ test "$("$host_bun" --version)" = 1.4.4
 android_zip="artifacts/transplant/android-bun/bun-1.4.4.zip"
 curl -fsSLo "$android_zip" https://github.com/oven-sh/bun/releases/download/bun-v1.4.4/bun-linux-aarch64-android.zip
 echo "${locked[2]}  $android_zip" | sha256sum -c -
+unzip -oq "$android_zip" -d "$WORK/android"
+android_bun="$ROOT/$WORK/android/bun-linux-aarch64-android/bun"
+test -x "$android_bun"
 cp tools/transplant/config/bun-bind-source-1.4.4.json tools/transplant/config/bun-bind.json
 
 cat > "$WORK/main.ts" <<'TS'
@@ -57,41 +60,53 @@ TS
 cat > "$WORK/build.ts" <<'TS'
 const targetElf = process.env.BUN_SOURCE_TARGET_ELF
 if (!targetElf) throw new Error("BUN_SOURCE_TARGET_ELF must point to the pinned Linux ARM64 Bun")
+const androidElf = process.env.BUN_ANDROID_TARGET_ELF
+if (!androidElf) throw new Error("BUN_ANDROID_TARGET_ELF must point to the pinned Android Bun")
 
-const result = await Bun.build({
-  entrypoints: ["./main.ts"],
-  target: "bun",
-  compile: {
-    target: "bun-linux-arm64",
-    outfile: "./package/bin/opencode",
-    executablePath: targetElf,
-    execArgv: [
-      "--smol",
-      `--user-agent=opencode/latest/${process.env.OPENCODE_VERSION}/cli`,
-      "--use-system-ca",
-      "--no-warnings",
-    ],
-    autoloadTsconfig: false,
-    autoloadPackageJson: false,
-    autoloadDotenv: false,
-    autoloadBunfig: false,
-  },
-  bytecode: false,
-  throw: true,
-})
+async function build(outfile: string, executablePath: string) {
+  const result = await Bun.build({
+    entrypoints: ["./main.ts"],
+    target: "bun",
+    compile: {
+      target: "bun-linux-arm64",
+      outfile,
+      executablePath,
+      execArgv: [
+        "--smol",
+        `--user-agent=opencode/latest/${process.env.OPENCODE_VERSION}/cli`,
+        "--use-system-ca",
+        "--no-warnings",
+      ],
+      autoloadTsconfig: false,
+      autoloadPackageJson: false,
+      autoloadDotenv: false,
+      autoloadBunfig: false,
+    },
+    bytecode: false,
+    throw: true,
+  })
 
-if (!result.success) throw new Error("Bun.build did not produce the minimal standalone")
+  if (!result.success) throw new Error(`Bun.build did not produce ${outfile}`)
+}
+
+await build("./package/bin/opencode", targetElf)
+await build("./package/bin/opencode-direct", androidElf)
 TS
 
 (
   cd "$WORK"
   BUN_SOURCE_TARGET_ELF="$target_bun" \
+    BUN_ANDROID_TARGET_ELF="$android_bun" \
     OPENCODE_VERSION="$OPENCODE_VERSION" \
     "$host_bun" build.ts
 )
 compiled="$WORK/package/bin/opencode"
+direct="$WORK/package/bin/opencode-direct"
 test -s "$compiled"
+test -s "$direct"
+file "$direct" | grep -q 'ARM aarch64'
 chmod 0755 "$compiled"
+chmod 0755 "$direct"
 tar -czf "$WORK/minimal-bun144-$OPENCODE_VERSION.tgz" -C "$WORK" package
 
 python3 tools/transplant/transplant.py all \
@@ -116,6 +131,11 @@ assert product.is_file() and product.stat().st_size > 50_000_000
 candidate = out / "opencode-minimal-bun144-transplant"
 shutil.copyfile(product, candidate)
 candidate.chmod(0o755)
+direct_source = Path("work/minimal-bun144-transplant/package/bin/opencode-direct")
+assert direct_source.is_file() and direct_source.stat().st_size > 50_000_000
+direct_candidate = out / "opencode-minimal-bun144-direct"
+shutil.copyfile(direct_source, direct_candidate)
+direct_candidate.chmod(0o755)
 
 variant = {
     "candidate": "diagnostic-only",
@@ -132,11 +152,17 @@ variant = {
         "--no-warnings",
     ],
     "purpose": "Isolate Bun standalone startup and Android ELF grafting from the OpenCode application graph",
+    "direct_control": {
+        "file": direct_candidate.name,
+        "build_method": "Bun.build compile using the verified Android Bun ELF as executablePath",
+        "revive_patch_applied": False,
+    },
     "on_device_test_required": True,
 }
 (out / "build-variant.json").write_text(
     json.dumps(variant, indent=2) + "\n", encoding="utf-8"
 )
 print(f"minimal Bun 1.4.4 transplant candidate: {candidate}")
+print(f"minimal Bun 1.4.4 direct-build control: {direct_candidate}")
 print(f"build variant: {out / 'build-variant.json'}")
 PY

@@ -245,6 +245,10 @@ jobs:
             PRODUCT="$OUT/opencode-native-tui"
           fi
           install -m 0755 "$PRODUCT" "dist/$NAME"
+          if [ "${{ inputs.strategy }}" = minimal-bun144-transplant ]; then
+            install -m 0755 "$OUT/opencode-minimal-bun144-direct" \
+              "dist/opencode-$OPENCODE_VERSION-android-aarch64-minimal-bun144-direct"
+          fi
           cp "$OUT/report.json" dist/transplant-report.json
           cp tools/supply-chain-lock.json dist/supply-chain-lock.json
           if [ "${{ inputs.strategy }}" = source-bun144-sourcegraph ] || \
