@@ -11,6 +11,7 @@ on:
         options:
           - source-bun140
           - source-bun144-sourcegraph
+          - minimal-bun144-transplant
 
 permissions:
   contents: read
@@ -73,7 +74,9 @@ jobs:
           ot = lock["opentui"][os.environ["OPENTUI_VERSION"]]
           strategy = os.environ["BUILD_STRATEGY"]
           bun_version = (
-              "1.4.4" if strategy == "source-bun144-sourcegraph" else oc["bun_version"]
+              "1.4.4"
+              if strategy in ("source-bun144-sourcegraph", "minimal-bun144-transplant")
+              else oc["bun_version"]
           )
           bun = lock["android_bun"][bun_version]
           assert ot["commit"] == os.environ["OPENTUI_COMMIT"]
@@ -98,6 +101,10 @@ jobs:
           test "$(zig version)" = "$ZIG_VERSION"
         env:
           BUILD_STRATEGY: ${{ inputs.strategy }}
+
+      - name: Build minimal Bun 1.4.4 transplant diagnostic
+        if: ${{ inputs.strategy == 'minimal-bun144-transplant' }}
+        run: bash scripts/ci/build-minimal-bun144-transplant.sh
 
       - name: Apply version-locked OpenTUI Android hardening
         run: |
@@ -227,13 +234,21 @@ jobs:
             NAME="opencode-$OPENCODE_VERSION-android-aarch64-source-bun140"
           elif [ "${{ inputs.strategy }}" = source-bun144-sourcegraph ]; then
             NAME="opencode-$OPENCODE_VERSION-android-aarch64-source-bun144-sourcegraph"
+          elif [ "${{ inputs.strategy }}" = minimal-bun144-transplant ]; then
+            NAME="opencode-$OPENCODE_VERSION-android-aarch64-minimal-bun144-transplant"
           else
             NAME="opencode-$OPENCODE_VERSION-android-aarch64"
           fi
-          install -m 0755 "$OUT/opencode-native-tui" "dist/$NAME"
+          if [ "${{ inputs.strategy }}" = minimal-bun144-transplant ]; then
+            PRODUCT="$OUT/opencode-minimal-bun144-transplant"
+          else
+            PRODUCT="$OUT/opencode-native-tui"
+          fi
+          install -m 0755 "$PRODUCT" "dist/$NAME"
           cp "$OUT/report.json" dist/transplant-report.json
           cp tools/supply-chain-lock.json dist/supply-chain-lock.json
-          if [ "${{ inputs.strategy }}" = source-bun144-sourcegraph ]; then
+          if [ "${{ inputs.strategy }}" = source-bun144-sourcegraph ] || \
+             [ "${{ inputs.strategy }}" = minimal-bun144-transplant ]; then
             cp "$OUT/build-variant.json" dist/build-variant.json
           fi
           (cd dist && sha256sum * > SHA256SUMS)

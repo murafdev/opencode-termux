@@ -41,6 +41,7 @@ opencode-termux/
 | Plugin lifecycle | `tools/plugin-manager.sh`, `tools/plugin-selfcheck.sh`, `docs/plugin-management.md` | local file plugin path + snapshot rollback model |
 | Upgrade/downgrade simulation | `tools/upgrade-matrix.sh`, `docs/execution-checklist.md` | machine2 lifecycle validation with cached deb artifacts |
 | Transplant 管线 | `tools/transplant/transplant.py` | 原生 android Bun 拼接 + ELF 复活手术（C1 已复活，见 `docs/transplant.md`） |
+| Native Android CI diagnostics | `.github/workflows/build-native-android.yml`, `scripts/ci/build-minimal-bun144-transplant.sh` | opt-in runtime-test candidate workflow; artifacts are diagnostic-only |
 | CI armv7 handoff | `.github/workflows/prebuild-armv7.yml`, `scripts/ci/*` | attempt-based build evidence, not final Termux release path |
 
 ## CODE MAP
