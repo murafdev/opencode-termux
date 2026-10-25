@@ -4,6 +4,17 @@
 
 This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/Spectra010s/opencode-termux). The latest Termux build runs OpenCode **2.1.4** on Android/Bionic Bun **1.4.4** with OpenTUI 0.6.8, including the Android 11+ heap-pointer-tagging fix and Google Play Termux startup support. Both OpenCode 2.1.3 builds (Bun 1.4.4 and the original Bun 1.4.0) are preserved as rollback options.
 
+## Why this fork
+
+- **Native single binary.** OpenCode 2 on Android/aarch64 Bionic. No PRoot, glibc, Node.js, or npm.
+- **Verifiable releases.** Built in GitHub Actions from pinned inputs and checked against a hash-pinned lock file. Checksums and the release archive are signed with keyless Sigstore; install `cosign` and set `OPENCODE_REQUIRE_SIGNATURE=1` to enforce verification.
+- **Vulnerability gate.** Dependencies are scanned with OSV in CI.
+- **Android 11+ and Google Play Termux fixes** for TUI startup.
+
+## How this was made
+
+Developed with AI coding agents. I read the installer and release workflow, and I test each release on a real device (Xiaomi Poco X6 Pro, Android 16) before publishing. Other Android versions are untested by me; the build targets Android 9+. Please report problems with your device model, Android and Termux version.
+
 ## Requirements
 
 - Termux on an Android/aarch64 device running Android 9 (API 28) or newer.
