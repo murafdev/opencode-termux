@@ -13,7 +13,7 @@ This is the `murafdev` fork of [Spectra010s/opencode-termux](https://github.com/
 
 ## How this was made
 
-Developed with AI coding agents. I read the installer and release workflow, and I test each release on a real device (Xiaomi Poco X6 Pro, Android 16) before publishing. Other Android versions are untested by me; the build targets Android 9+. Please report problems with your device model, Android and Termux version.
+Developed with AI coding agents. I read the installer and release workflow, and I test each release on a real device (Xiaomi Poco X6 Pro, Android 16) as part of release validation and record the result in the release notes. Other Android versions are untested by me; the build targets Android 9+. Please report problems with your device model, Android and Termux version.
 
 ## Requirements
 
