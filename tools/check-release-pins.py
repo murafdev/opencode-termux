@@ -68,8 +68,10 @@ def main() -> int:
     candidate_tag = re.compile(rf"v{re.escape(version)}-bun144\.\d+")
     if not candidate_tag.fullmatch(build_release_tag):
         fail(f"build TERMUX_RELEASE_TAG {build_release_tag!r} does not match v{version}-bun144.<n>")
-    if release_tag != build_release_tag:
-        fail(f"publish RELEASE_TAG {release_tag!r} differs from build tag {build_release_tag!r}")
+    # The candidate may run ahead of the published stable (afce61e built
+    # v2.1.4-bun144.1 while install.sh still served v2.1.3-bun144.1), but the
+    # publisher must never target a tag the installer does not serve yet: that
+    # would publish an unvalidated candidate under the public release tag.
     if release_tag != installer_tag:
         fail(f"publish RELEASE_TAG {release_tag!r} differs from current installer tag {installer_tag!r}")
     expected_stable_asset = f"opencode-{stable_version}-android-aarch64-source-bun144-sourcegraph"
@@ -162,7 +164,10 @@ def main() -> int:
         if not re.fullmatch(r"[0-9a-f]{40}", revision):
             fail(f"OSV workflow action {action!r} is not pinned to a commit SHA")
 
-    compatible_patch_versions = {"0.6.6": {"0.6.6", "0.6.8"}}
+    compatible_patch_versions = {
+        "0.6.6": {"0.6.6", "0.6.8"},
+        "0.7.0": {"0.7.0"},
+    }
     if opentui_patch_version not in compatible_patch_versions or opentui_version not in compatible_patch_versions[opentui_patch_version]:
         fail(f"OpenTUI {opentui_version} has no validated Android patch set {opentui_patch_version}")
     patch_script = f"tools/patch-opentui-{opentui_patch_version}.py"

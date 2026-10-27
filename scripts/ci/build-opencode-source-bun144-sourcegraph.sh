@@ -95,8 +95,14 @@ PY
 cd "$src"
 "$host_bun" install --frozen-lockfile --ignore-scripts --os=linux --cpu='*'
 cd "$src/packages/cli"
+# OpenCode 2.2.0 replaced the --target flag with OPENCODE_TARGET and silently
+# ignores the old flag. Pass both so pre-2.2 rollback builds and 2.2+ builds
+# select the same target; the assertion below fails if neither takes effect and
+# the build emits the host graph or every cross target instead.
+OPENCODE_TARGET=linux-arm64 \
 BUN_SOURCE_TARGET_ELF="$target_bun" \
   "$host_bun" script/build.ts --target=opencode-linux-arm64 --skip-install
+test "$(find dist -mindepth 1 -maxdepth 1 -type d -name 'cli-*' | wc -l)" -eq 1
 compiled="$src/packages/cli/dist/cli-linux-arm64/bin/opencode"
 test -s "$compiled"
 mkdir -p "$ROOT/$WORK/package/bin"

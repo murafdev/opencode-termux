@@ -51,6 +51,7 @@ jobs:
             tools/patch-opencode-source-bun140.py \
             tools/patch-opencode-config-guards.py \
             tools/patch-opentui-0.6.6.py \
+            tools/patch-opentui-0.7.0.py \
             tools/remap-binary-prefix.py \
             tools/supply-chain-lock.json \
             patches/opentui

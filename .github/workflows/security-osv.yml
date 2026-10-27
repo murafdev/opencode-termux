@@ -20,7 +20,7 @@ permissions:
   contents: read
 
 env:
-  OPENCODE_VERSION: "2.1.4"
+  OPENCODE_VERSION: "2.2.0"
 
 jobs:
   osv:
