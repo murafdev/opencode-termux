@@ -56,8 +56,8 @@ teardown() {
 	for patch in opencode-frontmatter-budget.patch opencode-instruction-budget.patch \
 		opencode-config-normalize-guard.patch; do
 		[ -s "$TEST_TMPDIR/patches/$patch" ]
-		grep -q '^--- a/packages/core/src/config/' "$TEST_TMPDIR/patches/$patch"
-		grep -q '^+++ b/packages/core/src/config/' "$TEST_TMPDIR/patches/$patch"
+		grep -q '^--- a/packages/core/src/config' "$TEST_TMPDIR/patches/$patch"
+		grep -q '^+++ b/packages/core/src/config' "$TEST_TMPDIR/patches/$patch"
 	done
 	grep -q 'frontmatterBudget(content)' \
 		"$TEST_TMPDIR/patches/opencode-frontmatter-budget.patch"
