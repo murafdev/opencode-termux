@@ -46,7 +46,7 @@ opencode-termux/
 | CI armv7 handoff | `.github/workflows/prebuild-armv7.yml`, `scripts/ci/*` | attempt-based build evidence, not final Termux release path |
 | Dependency vulnerability gate | `tools/check-osv.py`, `security/osv-baseline.json`, `.github/workflows/security-osv.yml` | scans the pinned upstream lockfile's `@opencode/cli` closure; critical/high findings need an expiring, justified suppression |
 | Accepted residual risk | `security/deferred-hardening.md` | per-suppression reachability, below-threshold inventory, Bun RELRO/BIND_NOW status |
-| Upstream guard submission | `docs/upstream-opencode-guards.md`, `patches/opencode/` | ready-to-file PR text + generated diffs for the config-parsing budgets |
+| Upstream guard submission | `docs/upstream-opencode-guards.md`, `patches/opencode/` | ready-to-file PR text + generated diffs for the config guards (parsing budgets + normalization failure isolation) |
 
 ## CODE MAP
 | Symbol | Type | Location | Refs | Role |

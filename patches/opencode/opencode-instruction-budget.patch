@@ -69,6 +69,6 @@
 +          })
 +          return []
 +        }
-         if (path.isAbsolute(expanded))
-           return yield* fs
-             .scan(path.basename(expanded), { ...options, cwd: path.dirname(expanded) })
+         if (path.isAbsolute(expanded)) {
+           // Keep literal directories working as before. When no literal parent exists, treat
+           // the whole source as a glob (`~/notes/**/*.md`) with `/` separators.

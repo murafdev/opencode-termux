@@ -1,11 +1,13 @@
-# Upstreaming the OpenCode config-parsing guards
+# Upstreaming the OpenCode config guards
 
 Status: **prepared, not filed.** These guards ship in the Termux build from
 `tools/patch-opencode-config-guards.py`; the patches under `patches/opencode/`
-are the same diff exported for upstream review.
+are the same diffs exported for upstream review.
 
 Target: `github.com/anomalyco/opencode`, default branch `dev`, based on commit
-`68bc26b7da1990ce10ffecfbc1e09eb13aa5d824` (OpenCode 2.1.4).
+`1097e2668b1e08ad63bdf0b1c4860b9bc01e420c` (OpenCode 2.2.0). All three anchors
+are unchanged from `68bc26b7da1990ce10ffecfbc1e09eb13aa5d824` (2.1.4), so one
+patcher covers both releases.
 
 | Path | Advisory | Severity |
 |---|---|---|
@@ -13,6 +15,7 @@ Target: `github.com/anomalyco/opencode`, default branch `dev`, based on commit
 | `packages/core/src/config/plugin/instruction.ts` | GHSA-6j4f-fj2g-mc7p / CVE-2026-102276 | HIGH |
 | `packages/core/src/config/plugin/instruction.ts` | GHSA-q2hr-2g5m-vwhr / CVE-2026-102277 | MODERATE |
 | `packages/core/src/config/plugin/instruction.ts` | GHSA-qhr7-859c-m2p7 / CVE-2026-102278 | HIGH |
+| `packages/core/src/config.ts` | upstream #59684 (startup crash) | HIGH |
 
 ## Threat model
 
@@ -30,11 +33,19 @@ service: startup hangs or burns CPU proportional to crafted input, not code
 execution or data exfiltration. It is still a routine "clone and run" path,
 which is why it is worth bounding in the parser call sites.
 
+A third path is a failure-isolation bug rather than a parsing budget.
+`canonical()` in `config/normalize.ts` unwraps its schema result with
+`Option.getOrThrow`, so one V1 entry that fails migration aborts the whole
+config load. A single malformed `command`, `agent`, legacy `mcp`, or `provider`
+entry then turns every request into a 500 and the TUI cannot start (upstream
+#59684). The reporter's legacy MCP server connected normally on 2.1.4 and
+crashed 2.2.0 on startup.
+
 ## What the patch does
 
-Both guards are additive, bounded far above real-world configs, and sit at the
-call site so they keep working if the dependency is patched, re-vendored, or
-replaced.
+The parsing guards are additive, bounded far above real-world configs, and sit
+at the call site so they keep working if the dependency is patched, re-vendored,
+or replaced.
 
 ### Frontmatter budget (`markdown.ts`)
 
@@ -71,6 +82,18 @@ to exactly one file.
 Absolute paths (including `~/...`) are scanned by basename with the directory as
 `cwd`, so the guard checks the same segment that is globbed there.
 
+### Config-normalization guard (`config.ts`)
+
+`parseInfo()` wraps `ConfigNormalize.normalize(input)` in `try/catch`. A throw
+is treated exactly like a document that fails final validation: the loader logs
+a `configuration normalization diagnostic` with `kind: "invalid"` and skips
+that source. The remaining config layers still load, so one bad entry costs
+that entry instead of the whole process.
+
+This is a fallback, not a migration fix: the skipped source is reported, so the
+user can correct the entry. The alternative is a crash loop in which no config
+loads at all.
+
 ## Reproduction
 
 Before the patch, in a scratch repository:
@@ -87,24 +110,32 @@ PY
 # 2) Glob amplification: exponential brace groups.
 printf '{"instructions": ["%s"]}\n' \
   "$(python3 -c 'print("{a,b}" * 16)')" > opencode.json
+
+# 3) Startup crash: keep a V1 config with a `command`, `agent`, legacy `mcp`,
+#    or `provider` entry that passes V1 decoding but fails V2 normalization.
+#    #59684 hit this with a legacy MCP server that worked on 2.1.4.
 ```
 
 `opencode` then stalls during config load. After the patch, (1) fails fast with
-a frontmatter budget error and (2) logs the skipped pattern and starts normally.
+a frontmatter budget error, (2) logs the skipped pattern and starts normally,
+and (3) logs `rejected configuration that failed normalization` and starts
+without that source instead of returning 500 on every request.
 
 ## Verification performed
 
 - `python3 tools/patch-opencode-config-guards.py --selftest` exercises both
-  guards with Node: normal frontmatter and globs pass; 33 merge keys, an
+  parsing guards with Node: normal frontmatter and globs pass; 33 merge keys, an
   oversized block, deep nesting, expansion flood, oversized patterns, and huge
   numeric ranges are rejected.
-- Applied against the real pinned 2.1.4 source: +20 lines in `markdown.ts`,
-  +58 lines in `instruction.ts`; `node --check` (after type stripping) passes.
+- Applied against the real pinned 2.1.4 and 2.2.0 sources: +20 lines in
+  `markdown.ts`, +58 lines in `instruction.ts`, +21 lines in `config.ts`;
+  `node --check` (after type stripping) passes on all three files for both
+  releases.
 - Real-world inputs (agent/command/skill frontmatter and instruction globs,
   including nested and numeric-range globs) parse byte-identically before and
   after the guard.
 - `tests/unit/config-guards.bats` covers idempotent application, anchor drift,
-  and patch export.
+  patch export, and the normalization-guard marker.
 
 ## Ready-to-paste PR
 
@@ -113,11 +144,12 @@ branch:
 
 ```sh
 git clone https://github.com/<you>/opencode && cd opencode
-git checkout -b fix/config-parsing-budgets 68bc26b7da1990ce10ffecfbc1e09eb13aa5d824
+git checkout -b fix/config-guards 1097e2668b1e08ad63bdf0b1c4860b9bc01e420c
 git apply /path/to/patches/opencode/opencode-frontmatter-budget.patch \
-          /path/to/patches/opencode/opencode-instruction-budget.patch
-git commit -am "fix(config): bound project-controlled frontmatter and instruction globs"
-git push origin fix/config-parsing-budgets
+          /path/to/patches/opencode/opencode-instruction-budget.patch \
+          /path/to/patches/opencode/opencode-config-normalize-guard.patch
+git commit -am "fix(config): bound project-controlled parsing and isolate normalization failures"
+git push origin fix/config-guards
 ```
 
 Then open against `dev`, saving the fenced block below as
@@ -125,19 +157,23 @@ Then open against `dev`, saving the fenced block below as
 
 ```sh
 gh pr create --repo anomalyco/opencode --base dev \
-  --title "fix(config): bound project-controlled frontmatter and instruction globs" \
+  --title "fix(config): bound project-controlled parsing and isolate normalization failures" \
   --body-file /tmp/opencode-config-guards.md
 ```
 
 ````markdown
 ## Summary
 
-Bounds two project-controlled parsing paths that can exhaust CPU during startup:
+Bounds two project-controlled parsing paths that can exhaust CPU during startup,
+and isolates a third failure that aborts startup outright:
 
 - markdown frontmatter (`gray-matter` -> `js-yaml`), GHSA-2883-xcg3-v3hh / CVE-2026-84375;
 - the `instructions` glob list (`minimatch` -> `brace-expansion`),
   GHSA-6j4f-fj2g-mc7p / CVE-2026-102276, GHSA-q2hr-2g5m-vwhr / CVE-2026-102277,
-  GHSA-qhr7-859c-m2p7 / CVE-2026-102278.
+  GHSA-qhr7-859c-m2p7 / CVE-2026-102278;
+- `Config.parseInfo` -> `ConfigNormalize.normalize`, which currently throws out
+  of `canonical()` and turns a single bad V1 entry into a 500 on every request
+  (#59684).
 
 Opening an untrusted checkout currently lets the repository author hang startup.
 The guards bound that work at the call sites, so they remain effective even
@@ -151,6 +187,10 @@ after the underlying packages are upgraded.
   that exceeds 1024 chars, 8 brace levels, 32 groups, 32 in-brace commas, an
   expansion product of 256, or a numeric-range span of 4096. The skip is logged
   at debug level and other patterns still load.
+- `packages/core/src/config.ts`: catch a throwing `ConfigNormalize.normalize()`
+  and treat it exactly like a document that fails final validation: log a
+  diagnostic and skip that source. One malformed `command`, `agent`, legacy
+  `mcp`, or `provider` entry no longer aborts config load.
 
 Both limits are far above real configurations. No config format, API, or output
 of well-formed input changes.
@@ -158,11 +198,11 @@ of well-formed input changes.
 ## Tests
 
 - `--selftest` in the patch generation script (Node) covers accept/reject cases
-  for both guards, including 33 merge keys, oversized frontmatter, deep nesting,
-  expansion floods, and `{1..1000000}`.
-- Applied to 2.1.4: normal agent/command/skill frontmatter and instruction
-  globs parse identically before and after.
-- `node --check` passes on both patched files.
+  for both parsing guards, including 33 merge keys, oversized frontmatter, deep
+  nesting, expansion floods, and `{1..1000000}`.
+- Applied to 2.1.4 and 2.2.0: normal agent/command/skill frontmatter and
+  instruction globs parse identically before and after.
+- `node --check` passes on all three patched files for both releases.
 
 ## Notes
 

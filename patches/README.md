@@ -26,6 +26,7 @@ wrapped for Android using bun-termux-loader (in CI or locally).
 
 `opencode/` holds diffs that are **not** part of the Android patch set. They are
 generated from `tools/patch-opencode-config-guards.py` for filing upstream:
-config-parsing budgets for untrusted frontmatter and instruction globs. See
+config-parsing budgets for untrusted frontmatter and instruction globs, plus a
+normalization-failure guard so one bad V1 config entry cannot abort startup. See
 `opencode/README.md` and `docs/upstream-opencode-guards.md`. Do not apply them
 on top of a source tree that the build script already patches.

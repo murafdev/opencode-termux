@@ -33,6 +33,9 @@ teardown() {
 	grep -q "frontmatterBudget(content)" "$TEST_TMPDIR/packages/core/src/config/markdown.ts"
 	grep -q "unsafeInstructionPattern(path.isAbsolute(expanded)" \
 		"$TEST_TMPDIR/packages/core/src/config/plugin/instruction.ts"
+	grep -q "opencode-termux:config-normalize-guard" \
+		"$TEST_TMPDIR/packages/core/src/config.ts"
+	grep -q "catch {" "$TEST_TMPDIR/packages/core/src/config.ts"
 
 	run python3 "$PATCHER" --check "$TEST_TMPDIR"
 	[ "$status" -eq 0 ]
@@ -50,7 +53,8 @@ teardown() {
 	[ "$status" -eq 0 ]
 
 	local patch
-	for patch in opencode-frontmatter-budget.patch opencode-instruction-budget.patch; do
+	for patch in opencode-frontmatter-budget.patch opencode-instruction-budget.patch \
+		opencode-config-normalize-guard.patch; do
 		[ -s "$TEST_TMPDIR/patches/$patch" ]
 		grep -q '^--- a/packages/core/src/config/' "$TEST_TMPDIR/patches/$patch"
 		grep -q '^+++ b/packages/core/src/config/' "$TEST_TMPDIR/patches/$patch"
@@ -59,6 +63,8 @@ teardown() {
 		"$TEST_TMPDIR/patches/opencode-frontmatter-budget.patch"
 	grep -q 'unsafeInstructionPattern' \
 		"$TEST_TMPDIR/patches/opencode-instruction-budget.patch"
+	grep -q 'opencode-termux:config-normalize-guard' \
+		"$TEST_TMPDIR/patches/opencode-config-normalize-guard.patch"
 
 	# Export must not modify the checkout it reads.
 	! grep -q 'opencode-termux:frontmatter-budget' \

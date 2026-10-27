@@ -1,0 +1,32 @@
+--- a/packages/core/src/config.ts
++++ b/packages/core/src/config.ts
+@@ -142,7 +142,28 @@
+           })
+           return
+         }
+-        const result = ConfigNormalize.normalize(input)
++        // opencode-termux:config-normalize-guard
++        // `canonical()` in config/normalize.ts unwraps its schema result with
++        // Option.getOrThrow, so one command/agent/mcp/provider entry that fails
++        // V1 migration aborts the whole config load and answers 500 to the TUI
++        // (upstream #59684). Treat a throwing normalizer exactly like a document
++        // that fails final validation: warn and skip this source, never crash.
++        const result = (() => {
++          try {
++            return ConfigNormalize.normalize(input)
++          } catch {
++            return undefined
++          }
++        })()
++        if (!result) {
++          yield* Effect.logWarning("configuration normalization diagnostic", {
++            source,
++            path: "$",
++            kind: "invalid",
++            action: "rejected configuration that failed normalization",
++          })
++          return
++        }
+         yield* Effect.forEach(result.diagnostics, (diagnostic) =>
+           Effect.logWarning("configuration normalization diagnostic", {
+             source,

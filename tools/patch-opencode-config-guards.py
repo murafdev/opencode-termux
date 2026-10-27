@@ -15,6 +15,14 @@ build installs with ``--frozen-lockfile``, so an override would replace the
 pinned dependency graph with a live resolution. The limits below are far above
 anything a real config uses, so normal projects are unaffected.
 
+A third guard keeps a malformed entry from taking down the whole process.
+``canonical()`` in ``config/normalize.ts`` unwraps its schema result with
+``Option.getOrThrow``, so one ``command``, ``agent``, legacy ``mcp``, or
+``provider`` entry that fails V1 migration aborts config load and makes the
+service answer 500 (upstream #59684). The guard turns that throw into the
+rejection path the loader already implements for documents that fail final
+validation, so the user keeps a running CLI instead of a crash loop.
+
 Every anchor must match exactly once. An upstream refactor therefore fails the
 build instead of silently dropping the guard. Re-running is a no-op.
 """
@@ -127,6 +135,32 @@ INSTRUCTION_CALL_REPLACEMENT = (
     + "        }\n"
 )
 
+CONFIG_NORMALIZE_ANCHOR = "        const result = ConfigNormalize.normalize(input)\n"
+
+CONFIG_NORMALIZE_REPLACEMENT = """        // opencode-termux:config-normalize-guard
+        // `canonical()` in config/normalize.ts unwraps its schema result with
+        // Option.getOrThrow, so one command/agent/mcp/provider entry that fails
+        // V1 migration aborts the whole config load and answers 500 to the TUI
+        // (upstream #59684). Treat a throwing normalizer exactly like a document
+        // that fails final validation: warn and skip this source, never crash.
+        const result = (() => {
+          try {
+            return ConfigNormalize.normalize(input)
+          } catch {
+            return undefined
+          }
+        })()
+        if (!result) {
+          yield* Effect.logWarning("configuration normalization diagnostic", {
+            source,
+            path: "$",
+            kind: "invalid",
+            action: "rejected configuration that failed normalization",
+          })
+          return
+        }
+"""
+
 STEPS = (
     (
         "packages/core/src/config/markdown.ts",
@@ -145,6 +179,12 @@ STEPS = (
         "opencode-termux:instruction-budget-call",
         INSTRUCTION_CALL_ANCHOR,
         INSTRUCTION_CALL_REPLACEMENT,
+    ),
+    (
+        "packages/core/src/config.ts",
+        "opencode-termux:config-normalize-guard",
+        CONFIG_NORMALIZE_ANCHOR,
+        CONFIG_NORMALIZE_REPLACEMENT,
     ),
 )
 
@@ -203,6 +243,12 @@ FIXTURES = {
         "        return []\n"
         "})\n"
     ),
+    "packages/core/src/config.ts": (
+        "export function parse(input: unknown) {\n"
+        "        const result = ConfigNormalize.normalize(input)\n"
+        "        return result\n"
+        "}\n"
+    ),
 }
 
 
@@ -216,6 +262,7 @@ def write_fixtures(root: Path) -> None:
 PATCH_NAMES = {
     "packages/core/src/config/markdown.ts": "opencode-frontmatter-budget.patch",
     "packages/core/src/config/plugin/instruction.ts": "opencode-instruction-budget.patch",
+    "packages/core/src/config.ts": "opencode-config-normalize-guard.patch",
 }
 
 
