@@ -31,6 +31,12 @@
       "bun_version": "1.4.4",
       "upstream_bun_version": "1.4.4",
       "lockfile_sha256": "e43fa59ca0a6a2c8fe7cce757aec27e1062a2614f1550bb46ff32c72ff487a7a"
+    },
+    "2.2.2": {
+      "commit": "098aa7fd6e02b03d6fc410f0b052038c7d4c5e81",
+      "bun_version": "1.4.4",
+      "upstream_bun_version": "1.4.4",
+      "lockfile_sha256": "30dbe63d4265f790cffbf89d9cb03c57dda7589ea8387ab7f4259925c51aede0"
     }
   },
   "android_bun": {
