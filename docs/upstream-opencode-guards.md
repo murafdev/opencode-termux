@@ -5,9 +5,10 @@ Status: **prepared, not filed.** These guards ship in the Termux build from
 are the same diffs exported for upstream review.
 
 Target: `github.com/anomalyco/opencode`, default branch `dev`, based on commit
-`1097e2668b1e08ad63bdf0b1c4860b9bc01e420c` (OpenCode 2.2.0). All three anchors
-are unchanged from `68bc26b7da1990ce10ffecfbc1e09eb13aa5d824` (2.1.4), so one
-patcher covers both releases.
+`098aa7fd6e02b03d6fc410f0b052038c7d4c5e81` (OpenCode 2.2.2). All three anchors
+are unchanged from `1097e2668b1e08ad63bdf0b1c4860b9bc01e420c` (2.2.0) and
+`68bc26b7da1990ce10ffecfbc1e09eb13aa5d824` (2.1.4), so one patcher covers all
+three releases.
 
 | Path | Advisory | Severity |
 |---|---|---|
@@ -127,9 +128,9 @@ without that source instead of returning 500 on every request.
   parsing guards with Node: normal frontmatter and globs pass; 33 merge keys, an
   oversized block, deep nesting, expansion flood, oversized patterns, and huge
   numeric ranges are rejected.
-- Applied against the real pinned 2.1.4 and 2.2.0 sources: +20 lines in
-  `markdown.ts`, +58 lines in `instruction.ts`, +21 lines in `config.ts`;
-  `node --check` (after type stripping) passes on all three files for both
+- Applied against the real pinned 2.1.4, 2.2.0, and 2.2.2 sources: +20 lines in
+  `markdown.ts`, +58 lines in `instruction.ts`, +21 net lines in `config.ts`;
+  `node --check` (after type stripping) passes on all three files for all three
   releases.
 - Real-world inputs (agent/command/skill frontmatter and instruction globs,
   including nested and numeric-range globs) parse byte-identically before and
@@ -144,7 +145,7 @@ branch:
 
 ```sh
 git clone https://github.com/<you>/opencode && cd opencode
-git checkout -b fix/config-guards 1097e2668b1e08ad63bdf0b1c4860b9bc01e420c
+git checkout -b fix/config-guards 098aa7fd6e02b03d6fc410f0b052038c7d4c5e81
 git apply /path/to/patches/opencode/opencode-frontmatter-budget.patch \
           /path/to/patches/opencode/opencode-instruction-budget.patch \
           /path/to/patches/opencode/opencode-config-normalize-guard.patch
@@ -200,9 +201,9 @@ of well-formed input changes.
 - `--selftest` in the patch generation script (Node) covers accept/reject cases
   for both parsing guards, including 33 merge keys, oversized frontmatter, deep
   nesting, expansion floods, and `{1..1000000}`.
-- Applied to 2.1.4 and 2.2.0: normal agent/command/skill frontmatter and
+- Applied to 2.1.4, 2.2.0, and 2.2.2: normal agent/command/skill frontmatter and
   instruction globs parse identically before and after.
-- `node --check` passes on all three patched files for both releases.
+- `node --check` passes on all three patched files for all three releases.
 
 ## Notes
 
@@ -216,25 +217,25 @@ cannot reintroduce the same denial of service.
 
 ## Dependency-bump asks
 
-These are separate, smaller PRs upstream. Ranges marked "in range" only need a
-`bun.lock` refresh; the rest need a version range change.
+These were the smaller, separate PRs upstream at the time of 2.2.0. The 2.2.2
+lockfile resolves every row except the transitive `zod@3.25.76` copy held by
+`gitlab-ai-provider@6.23.1`.
 
-| Package | Pinned | Fixed | Constraint | Action |
+| Package | Pinned (2.2.0) | Fixed | Constraint | 2.2.2 status |
 |---|---|---|---|---|
-| `js-yaml` | 3.15.1 | 3.15.2 | `gray-matter@4.0.3`: `^3.13.1` | in range: `bun update js-yaml` |
-| `brace-expansion` | 2.1.4 | 2.1.7 | `minimatch@8.0.7`: `^2.0.1` | in range: lockfile refresh |
-| `brace-expansion` | 5.0.9 | 5.0.12 | `minimatch@10.2.5`: `^5.0.5` | in range: lockfile refresh |
-| `seroval` | 1.5.6 | 1.6.3 | `solid-js@1.9.15`: `~1.5.4` | needs a `solid-js` release |
-| `undici` | 6.28.0 | 6.29.1 | `node-gyp@12.4.0`: `^6.25.0` | in range: lockfile refresh (install-time only) |
-| `undici` | 8.11.2 | 8.12.2 | `@effect/platform-node@4.0.1`: `^8.11.2` | in range: lockfile refresh (npm copy unused under Bun) |
-| `zod` | 3.25.76 | 4.6.6 | `gitlab-ai-provider@6.19.0`: `^3.25.76` | out of the provider's range |
-| `zod` | 4.1.8 / 4.4.3 | 4.6.6 | workspace `catalog:`, `@modelcontextprotocol/client@2.3.1`: `^4.2.0` | in range: catalog + lockfile refresh |
-| `http-cache-semantics` | 4.2.0 | none | `@npmcli/arborist` (plugin install) | wait for upstream |
+| `js-yaml` | 3.15.1 | 3.15.2 | `gray-matter@4.0.3`: `^3.13.1` | resolved (3.15.2) |
+| `brace-expansion` | 2.1.4 | 2.1.7 | `minimatch@8.0.7`: `^2.0.1` | resolved (2.1.7) |
+| `brace-expansion` | 5.0.9 | 5.0.12 | `minimatch@10.2.5`: `^5.0.5` | resolved (5.0.12) |
+| `seroval` | 1.5.6 | 1.6.3 | `solid-js@1.9.15`: `~1.5.4` | not in the gated 2.2.2 closure |
+| `undici` | 6.28.0 | 6.29.1 | `node-gyp@12.4.0`: `^6.25.0` | resolved (6.29.1) |
+| `undici` | 8.11.2 | 8.12.2 | `@effect/platform-node@4.0.1`: `^8.11.2` | resolved (8.12.3) |
+| `zod` | 3.25.76 | 4.6.6 | `gitlab-ai-provider@6.23.1`: `^3.25.76` | still open |
+| `zod` | 4.1.8 / 4.4.3 | 4.6.6 | workspace `catalog:`, `@modelcontextprotocol/client@2.3.1`: `^4.2.0` | resolved (4.6.7) |
+| `http-cache-semantics` | 4.2.0 | none | `@npmcli/arborist` (plugin install) | not in the gated 2.2.2 closure (4.3.0 present) |
 
-The first three rows remove five of the fourteen gated advisories in the Termux
-gate without any code change. The remaining rows are tracked in
-`security/osv-baseline.json` with an expiry of `2027-01-31`; see
-`security/README.md` for the policy.
+Only `zod@3.25.76` remains in `security/osv-baseline.json`, with an expiry of
+`2027-01-31`; see `security/README.md` for the policy. The gate reports one
+in-scope advisory and zero below-threshold findings for 2.2.2.
 
 ## Why not pin dependencies in the Termux build
 
