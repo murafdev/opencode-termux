@@ -20,16 +20,29 @@ These are the entries in `security/osv-baseline.json`. All are critical/high.
 |---|---|---|---|---|
 | `zod@3.25.76` | GHSA-mrhx-c7xc-m3w5 (HIGH) | 4.6.6 | `gitlab-ai-provider@6.23.1`: `^3.25.76` | Major-version gap: the provider does not accept zod 4 yet. Reachable in principle by schema validation of an oversized constrained collection; no such input path is known. |
 
-The 2.2.2 lockfile clears the nine other suppressions that applied to 2.2.0:
-`seroval`, both `brace-expansion` copies, `http-cache-semantics`, `js-yaml`,
-both `undici` copies, and the workspace/MCP `zod` copies now resolve to fixed
-releases. The fix column is the release that removes the advisory.
+The 2.2.5 lockfile keeps the nine other suppressions cleared that 2.2.2
+resolved: `seroval`, both `brace-expansion` copies, `http-cache-semantics`,
+`js-yaml`, both `undici` copies, and the workspace/MCP `zod` copies still
+resolve to fixed releases. The fix column is the release that removes the
+advisory.
 
-## Below-threshold advisories (0)
+## Below-threshold advisories (6 entries, 2 advisories)
 
-The 2.2.2 production closure has no moderate/low findings in scope. The gate
-still scans for them on every run so a future pin cannot silently reintroduce
-one.
+The 2.2.5 production closure has six moderate findings in scope, all below the
+critical/high gate. They are listed here so a future lockfile refresh does not
+silently carry them forward.
+
+| Package | Advisory | Fix | Holder | Why deferred |
+|---|---|---|---|---|
+| `glob@9.3.5` | GHSA-3g3m-2fjr-6pw4 (MODERATE) | 14.0.2 | `babel-plugin-module-resolver` | AbortSignal cancellation bypass in glob traversal; moderate, below the gate. The holder accepts `glob@^9`, so the major bump needs an upstream dependency refresh. |
+| `glob@10.5.0` | GHSA-3g3m-2fjr-6pw4 (MODERATE) | 14.0.2 | `rimraf` | Same advisory; `rimraf` pins the 10.x line. |
+| `glob@13.0.5` | GHSA-3g3m-2fjr-6pw4 (MODERATE) | 14.0.2 | `cacache` | Same advisory; `cacache` pins the 13.x line. |
+| `minimatch@8.0.7` | GHSA-g3hv-75wg-m249 (MODERATE) | 11.0.1 | `babel-plugin-module-resolver/glob` | Denial of service via globparts amplification; moderate, below the gate. The holder accepts `minimatch@^8`. |
+| `minimatch@9.0.9` | GHSA-g3hv-75wg-m249 (MODERATE) | 11.0.1 | `rimraf/glob` | Same advisory; the holder accepts `minimatch@^9`. |
+| `minimatch@10.2.5` | GHSA-g3hv-75wg-m249 (MODERATE) | 11.0.1 | `glob` | Same advisory; the holder accepts `minimatch@^10`. |
+
+The gate still scans for moderate/low findings on every run so a future pin
+cannot silently reintroduce one.
 
 ## Bun runtime hardening (RELRO / BIND_NOW)
 
