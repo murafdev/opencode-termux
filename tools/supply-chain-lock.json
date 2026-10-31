@@ -37,6 +37,12 @@
       "bun_version": "1.4.4",
       "upstream_bun_version": "1.4.4",
       "lockfile_sha256": "30dbe63d4265f790cffbf89d9cb03c57dda7589ea8387ab7f4259925c51aede0"
+    },
+    "2.2.5": {
+      "commit": "9bbb8ce18c80f099e0e448775f59d965ead40a21",
+      "bun_version": "1.4.4",
+      "upstream_bun_version": "1.4.4",
+      "lockfile_sha256": "637e50b7418819af5bdbb28f705d8ff2ced8695f0f04fd6edb4c627bcb745d63"
     }
   },
   "android_bun": {
@@ -91,6 +97,11 @@
     },
     "0.7.0": {
       "commit": "85339b24a1056b09bc729f488c99d6cfbe3a6125",
+      "zig_version": "0.16.0",
+      "zig_x86_64_linux_sha256": "70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00"
+    },
+    "0.8.0": {
+      "commit": "738067f47e940dcec3f5aab74868908574335c6c",
       "zig_version": "0.16.0",
       "zig_x86_64_linux_sha256": "70e49664a74374b48b51e6f3fdfbf437f6395d42509050588bd49abe52ba3d00"
     }
