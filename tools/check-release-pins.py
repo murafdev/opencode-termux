@@ -91,11 +91,11 @@ def main() -> int:
         fail("README does not link to the current stable release page")
     if f"raw/{installer_tag}/install.sh" not in readme or f"raw/{installer_tag}/install.sh" not in notes:
         fail("README and release notes must use the current stable release installer")
-    for rollback_tag in ("v2.2.0-bun144.1", "v2.1.4-bun144.2", "v2.1.3-bun144.1", "v2.1.3"):
+    for rollback_tag in ("v2.2.2-bun144.1", "v2.2.0-bun144.1", "v2.1.4-bun144.2", "v2.1.3-bun144.1", "v2.1.3"):
         rollback_installer = f"raw/{rollback_tag}/install.sh"
         if rollback_installer not in readme or rollback_installer not in notes:
             fail(f"README and release notes must retain the {rollback_tag} rollback installer")
-    for tag in ("v2.2.0-bun144.1", "v2.1.4-bun144.2", "v2.1.3-bun144.1", "v2.1.3"):
+    for tag in ("v2.2.2-bun144.1", "v2.2.0-bun144.1", "v2.1.4-bun144.2", "v2.1.3-bun144.1", "v2.1.3"):
         if tag not in publish:
             fail(f"publish workflow must preserve and annotate rollback release {tag}")
 

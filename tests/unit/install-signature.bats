@@ -5,8 +5,8 @@
 
 load '../lib/helper'
 
-ARCHIVE="opencode-2.2.2-android-aarch64-source-bun144-sourcegraph.tar.gz"
-ASSET="opencode-2.2.2-android-aarch64-source-bun144-sourcegraph"
+ARCHIVE="opencode-2.2.5-android-aarch64-source-bun144-sourcegraph.tar.gz"
+ASSET="opencode-2.2.5-android-aarch64-source-bun144-sourcegraph"
 
 setup() {
 	make_tmpdir

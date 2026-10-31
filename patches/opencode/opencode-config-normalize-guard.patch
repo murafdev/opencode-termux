@@ -1,6 +1,6 @@
 --- a/packages/core/src/config.ts
 +++ b/packages/core/src/config.ts
-@@ -142,7 +142,28 @@
+@@ -145,7 +145,28 @@
            })
            return
          }
