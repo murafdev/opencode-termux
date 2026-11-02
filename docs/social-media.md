@@ -29,12 +29,12 @@ update that tag everywhere (search for it) and re-check the install command.
 
 **Short (fits X)**
 
-> Fork of Spectra010s/opencode-termux. Upstream OpenCode: anomalyco/opencode.
+> Fork of Spectra010s/opencode-termux via Hope2333/opencode-termux. Upstream: anomalyco/opencode.
 
 **Medium (Reddit, HN, Mastodon)**
 
-> This is a fork of Adeloye Adetayo's (Spectra010s) Termux project, derived
-> from Hope2333/opencode-termux. OpenCode itself is anomalyco/opencode. I only
+> This is a fork of Spectra010s/opencode-termux, derived from
+> Hope2333/opencode-termux. OpenCode itself is anomalyco/opencode. I only
 > maintain the fork builds, installer, and release pipeline.
 
 **Full (video description, blog, README)**
@@ -48,15 +48,15 @@ update that tag everywhere (search for it) and re-check the install command.
 
 ## 1. X / Twitter — single post
 
-> OpenCode 2.2.5, running natively in Termux.
+> OpenCode 2.2.5, native in Termux.
 >
 > No PRoot. No glibc. No Node.js.
 >
-> One Android/aarch64 Bionic binary (~190 MB). Checksums + optional Sigstore.
+> One Android/aarch64 Bionic binary (~190 MB). Checksums + Sigstore.
 >
 > curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.2.5-bun144.1/install.sh | sh
 >
-> Fork of Spectra010s/opencode-termux. Upstream OpenCode: anomalyco/opencode.
+> Fork of Spectra010s/opencode-termux via Hope2333/opencode-termux. Upstream: anomalyco/opencode.
 
 X counts any URL as 23 characters, so this fits in 280. The command is meant to
 be copied, not clicked. The credit line is part of the post, not a reply.
@@ -71,7 +71,7 @@ be copied, not clicked. The credit line is part of the post, not a reply.
 >
 > No PRoot. No glibc. No Node.js. Just a single Bionic ELF for aarch64.
 >
-> Fork of Spectra010s/opencode-termux; OpenCode itself is anomalyco/opencode.
+> Fork of Spectra010s/opencode-termux via Hope2333/opencode-termux; OpenCode itself is anomalyco/opencode.
 >
 > Here is what that means, and how to install it 🧵
 
@@ -93,16 +93,16 @@ be copied, not clicked. The credit line is part of the post, not a reply.
 
 **4/**
 
-> It is built in GitHub Actions from pinned inputs, not uploaded from a phone.
+> Built in GitHub Actions from pinned inputs, not uploaded from a phone.
 >
-> Releases ship `SHA256SUMS` plus keyless Sigstore bundles. The installer always checks hashes, and checks signatures when `cosign` is present. Set `OPENCODE_REQUIRE_SIGNATURE=1` to make a missing signature fatal.
+> Releases ship `SHA256SUMS` plus keyless Sigstore bundles. The installer always checks hashes, and checks signatures when `cosign` is present. `OPENCODE_REQUIRE_SIGNATURE=1` makes a missing signature fatal.
 
 **5/**
 
 > Two Android-specific fixes:
 >
-> • Android 11+ tags heap pointers in the top byte. OpenTUI rejected those addresses and aborted startup. The renderer now disables tagging as it loads.
-> • Google Play Termux execs binaries through `linker64`. The build detects that and re-execs its server via `/system/bin/sh`.
+> • Android 11+ top-byte pointer tagging made OpenTUI reject addresses and abort startup. The renderer disables tagging on load.
+> • Google Play Termux execs via `linker64`; the build re-execs its server through `/system/bin/sh`.
 
 **6/**
 
@@ -134,7 +134,7 @@ be copied, not clicked. The credit line is part of the post, not a reply.
 >
 > Android 9+ (API 28), aarch64. Validated on one device so far; reports welcome.
 >
-> Fork of Adeloye Adetayo's (Spectra010s) Termux project; OpenCode by anomalyco/opencode.
+> Fork of Spectra010s/opencode-termux, derived from Hope2333/opencode-termux; OpenCode by anomalyco/opencode.
 >
 > https://github.com/murafdev/opencode-termux
 
@@ -154,8 +154,8 @@ Under the default 500-character limit.
 > 2.2.5 directly on Android's Bionic libc as a single aarch64 ELF — no PRoot, no
 > glibc, no Node.js or npm.
 >
-> **Credit where it is due:** this is a fork of Adeloye Adetayo's (Spectra010s)
-> Termux project, derived from Hope2333/opencode-termux. OpenCode itself is
+> **Credit where it is due:** this is a fork of Spectra010s/opencode-termux,
+> derived from Hope2333/opencode-termux. OpenCode itself is
 > anomalyco/opencode. I only maintain the fork builds, installer, and release
 > pipeline.
 >
@@ -228,9 +228,9 @@ Under the default 500-character limit.
 > and, when `cosign` is present, signatures. There is also an OSV dependency
 > gate.
 >
-> Credit: this is a fork of Adeloye Adetayo's (Spectra010s) Termux project,
-> derived from Hope2333/opencode-termux. OpenCode itself is anomalyco/opencode.
-> I only maintain the fork builds, installer, and release pipeline.
+> Credit: this is a fork of Spectra010s/opencode-termux, derived from
+> Hope2333/opencode-termux. OpenCode itself is anomalyco/opencode. I only
+> maintain the fork builds, installer, and release pipeline.
 >
 > Caveat: runtime validation is one device (Poco X6 Pro, Android 16), not a
 > device matrix. Reports from Android 9–10 and other OEMs would be especially
@@ -265,9 +265,9 @@ Post Tuesday–Thursday morning US time. Do not ask for votes.
 > curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.2.5-bun144.1/install.sh | sh
 > ```
 >
-> **Credits:** this is a fork of Adeloye Adetayo's (Spectra010s) Termux
-> project, derived from Hope2333/opencode-termux. OpenCode itself is
-> anomalyco/opencode. I maintain the fork builds and release pipeline.
+> **Credits:** this is a fork of Spectra010s/opencode-termux, derived from
+> Hope2333/opencode-termux. OpenCode itself is anomalyco/opencode. I maintain
+> the fork builds and release pipeline.
 >
 > Caveat worth stating plainly: validation is one device so far. If you run it,
 > device reports are genuinely useful.
@@ -290,7 +290,7 @@ Post Tuesday–Thursday morning US time. Do not ask for votes.
 >
 > Android 9+ · ~190 MB installed · checksums always, Sigstore when `cosign` is present
 >
-> Fork of Adeloye Adetayo's (Spectra010s) Termux project, derived from Hope2333/opencode-termux. OpenCode itself is anomalyco/opencode.
+> Fork of Spectra010s/opencode-termux, derived from Hope2333/opencode-termux. OpenCode itself is anomalyco/opencode.
 >
 > https://github.com/murafdev/opencode-termux
 >
@@ -308,7 +308,7 @@ Post Tuesday–Thursday morning US time. Do not ask for votes.
 | 0:18–0:26 | Paste install command, show checksum lines | "One command installs it. The installer verifies the archive and the binary before replacing anything." | "checksums + optional Sigstore" |
 | 0:26–0:34 | TUI, send a prompt, response streams | "Then it is just OpenCode: sessions, tools, your project." | "opencode" |
 | 0:34–0:42 | Release page with `SHA256SUMS` and cosign bundles | "Releases are built in CI from pinned inputs, with checksums and Sigstore signatures." | "CI-built · pinned inputs" |
-| 0:42–0:50 | Repo page, then the two upstream repos | "This is a fork of Spectra010s's Termux project; OpenCode itself is anomalyco/opencode. Validated on one device so far — tell me how it runs on yours." | "Fork of Spectra010s/opencode-termux · Upstream: anomalyco/opencode" |
+| 0:42–0:50 | Repo page, then the two upstream repos | "This is a fork of Spectra010s's Termux project, derived from Hope2333/opencode-termux; OpenCode itself is anomalyco/opencode. Validated on one device so far — tell me how it runs on yours." | "Fork of Spectra010s/opencode-termux via Hope2333/opencode-termux · Upstream: anomalyco/opencode" |
 
 ---
 
@@ -350,8 +350,9 @@ Post Tuesday–Thursday morning US time. Do not ask for votes.
 
 ## Posting checklist
 
-1. Credit check: every post names Spectra010s/opencode-termux and
-   anomalyco/opencode in the body. Not just a reply, not just a bio.
+1. Credit check: every post names Spectra010s/opencode-termux,
+   Hope2333/opencode-termux, and anomalyco/opencode in the body. Not just a
+   reply, not just a bio.
 2. Confirm the release tag in the command still matches the latest release.
 3. Attach a screenshot or short screen recording; use the alt text above.
 4. Put the repo link in the post body, not only in a bio.
