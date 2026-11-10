@@ -1,19 +1,19 @@
 # PROJECT KNOWLEDGE BASE
 
-## ACTIVE NATIVE V2 WORK (2026-10-31)
+## ACTIVE NATIVE V2 WORK (2026-11-10)
 
-- Native Android/OpenCode v2 `2.2.5` (Bun 1.4.4, OpenTUI 0.8.0) is the current user-facing release. Branch `native-android` is the release line.
+- Native Android/OpenCode v2 `2.2.7` (Bun 1.4.4, OpenTUI 0.8.1, Zig 0.17.0) is the current user-facing release. Branch `native-android` is the release line.
 - Current user-facing path: `README.md` and `install.sh` installing `~/.local/bin/opencode`. Current build path: `docs/native-v2-build.md` and the native Android workflows.
 - Release builds run in GitHub Actions for reproducibility. On-device local builds are allowed; Termux already is Bionic so no NDK. Needs Termux `python3`, `npm`, `clang`, `make` (`zig` only to rebuild OpenTUI), network, and pinned inputs in `tools/supply-chain-lock.json`. Guide: `docs/transplant.md` + `make transplant VER=2.0.26`.
-- Source/Bun 1.4.4 release candidate from Actions run 41193063342 passed on-device checksum, `--version`, TUI startup, and clean exit. Publish from a verified CI artifact only; never upload the phone's local copy.
+- Source/Bun 1.4.4 release candidate from Actions run 42819305690 passed on-device checksum, `--version`, TUI startup, and clean exit. Publish from a verified CI artifact only; never upload the phone's local copy.
+- OpenTUI 0.8.1 requires Zig 0.17.0. Zig 0.17 translate-c appends the host system include paths even for Android, so the Bionic build adds an empty `limits.h` shim after the NDK sysroot; without it, the host glibc `limits.h` shadows Bionic and the renderer build fails.
 - Keep third-party Actions pinned to immutable commit SHAs. Use v6 action lines when available; do not downgrade to v4.
 - Do not replace the manual repository fetch with `actions/checkout` until the malformed upstream `termux-packages` gitlink/submodule metadata is repaired.
 
-**Generated:** 2026-06-12  
-**Branch:** pure-android
+**Generated:** 2026-11-10 · **Branch:** native-android
 
 ## OVERVIEW
-Termux-first OpenCode build/packaging workspace. Stable mainline since 27/28 is the native bionic line: a single zero-glibc Android ELF produced by the transplant revive pipeline (`tools/transplant/`, `make transplant`; see `docs/transplant.md`). The wrapper line is renamed `opencode-wrapper` and demoted to appendix maintenance (local build path `tools/produce-local.sh` + `scripts/*`); `opencode-wrapper-standalone` is the frozen single-version rollback package that can coexist with `opencode`. `opencode` and `opencode-wrapper` remain mutually exclusive. GitHub Actions workflows are diagnostic/handoff, not final runtime release.
+Termux-first OpenCode build/packaging workspace. Stable mainline since 27/28 is the native bionic line: a single zero-glibc Android ELF produced by the transplant revive pipeline (`tools/transplant/`, `make transplant`; see `docs/transplant.md`). The wrapper line is renamed `opencode-wrapper` and demoted to appendix maintenance (local build path `tools/produce-local.sh` + `scripts/*`); `opencode-wrapper-standalone` is the frozen single-version rollback package that can coexist with `opencode`. `opencode` and `opencode-wrapper` remain mutually exclusive. GitHub Actions builds the native release artifact; publish only from a validated CI artifact, never from a phone-built copy.
 
 ## STRUCTURE
 ```text
@@ -42,7 +42,7 @@ opencode-termux/
 | Plugin lifecycle | `tools/plugin-manager.sh`, `tools/plugin-selfcheck.sh`, `docs/plugin-management.md` | local file plugin path + snapshot rollback model |
 | Upgrade/downgrade simulation | `tools/upgrade-matrix.sh`, `docs/execution-checklist.md` | machine2 lifecycle validation with cached deb artifacts |
 | Transplant 管线 | `tools/transplant/transplant.py` | 原生 android Bun 拼接 + ELF 复活手术（C1 已复活，见 `docs/transplant.md`） |
-| Native Android CI diagnostics | `.github/workflows/build-native-android.yml`, `scripts/ci/build-minimal-bun144-transplant.sh` | opt-in runtime-test candidate workflow; artifacts are diagnostic-only |
+| Native Android CI release build | `.github/workflows/build-native-android.yml`, `scripts/ci/build-minimal-bun144-transplant.sh` | runtime-test candidate workflow; publish only after on-device validation |
 | CI armv7 handoff | `.github/workflows/prebuild-armv7.yml`, `scripts/ci/*` | attempt-based build evidence, not final Termux release path |
 | Dependency vulnerability gate | `tools/check-osv.py`, `security/osv-baseline.json`, `.github/workflows/security-osv.yml` | scans the pinned upstream lockfile's `@opencode/cli` closure; critical/high findings need an expiring, justified suppression |
 | Accepted residual risk | `security/deferred-hardening.md` | per-suppression reachability, below-threshold inventory, Bun RELRO/BIND_NOW status |

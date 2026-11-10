@@ -1,6 +1,6 @@
 --- a/packages/core/src/config.ts
 +++ b/packages/core/src/config.ts
-@@ -145,7 +145,28 @@
+@@ -147,7 +147,28 @@
            })
            return
          }
@@ -27,6 +27,6 @@
 +          })
 +          return
 +        }
-         yield* Effect.forEach(result.diagnostics, (diagnostic) =>
-           Effect.logWarning("configuration normalization diagnostic", {
-             source,
+         // Every reload repeats the routine notes on a config that loads. A rejected config or a dropped malformed
+         // setting is the user's to fix, so those stay warnings.
+         yield* Effect.forEach(result.diagnostics, (diagnostic) => {

@@ -46,6 +46,7 @@ def main() -> int:
     opentui_commit = find(r'^\s+OPENTUI_COMMIT: "([0-9a-f]{40})"', build, "build workflow")
     build_release_tag = find(r'^\s+TERMUX_RELEASE_TAG: "([^"]+)"', build, "build workflow")
     release_tag = find(r'^\s+RELEASE_TAG: "([^"]+)"', publish, "publish workflow")
+    publish_version = find(r'^\s+OPENCODE_VERSION: "([^"]+)"', publish, "publish workflow")
     asset = find(r'^\s+ASSET: "([^"]+)"', publish, "publish workflow")
     installer_tag = find(r"^release_tag=(.+)$", installer, "install.sh")
     installer_asset = find(r"^asset=(.+)$", installer, "install.sh")
@@ -55,6 +56,8 @@ def main() -> int:
         fail(f"cannot derive the current stable version from installer tag {installer_tag!r}")
     stable_version = stable_match.group(1)
 
+    if publish_version != version:
+        fail(f"publish workflow targets OpenCode {publish_version} but the build uses {version}")
     if version not in lock["opencode"]:
         fail(f"candidate OpenCode {version} is not pinned in tools/supply-chain-lock.json")
     if stable_version not in lock["opencode"]:
@@ -91,11 +94,11 @@ def main() -> int:
         fail("README does not link to the current stable release page")
     if f"raw/{installer_tag}/install.sh" not in readme or f"raw/{installer_tag}/install.sh" not in notes:
         fail("README and release notes must use the current stable release installer")
-    for rollback_tag in ("v2.2.2-bun144.1", "v2.2.0-bun144.1", "v2.1.4-bun144.2", "v2.1.3-bun144.1", "v2.1.3"):
+    for rollback_tag in ("v2.2.5-bun144.1", "v2.2.2-bun144.1", "v2.2.0-bun144.1", "v2.1.4-bun144.2", "v2.1.3-bun144.1", "v2.1.3"):
         rollback_installer = f"raw/{rollback_tag}/install.sh"
         if rollback_installer not in readme or rollback_installer not in notes:
             fail(f"README and release notes must retain the {rollback_tag} rollback installer")
-    for tag in ("v2.2.2-bun144.1", "v2.2.0-bun144.1", "v2.1.4-bun144.2", "v2.1.3-bun144.1", "v2.1.3"):
+    for tag in ("v2.2.5-bun144.1", "v2.2.2-bun144.1", "v2.2.0-bun144.1", "v2.1.4-bun144.2", "v2.1.3-bun144.1", "v2.1.3"):
         if tag not in publish:
             fail(f"publish workflow must preserve and annotate rollback release {tag}")
 
@@ -175,6 +178,8 @@ def main() -> int:
     patch_script = f"tools/patch-opentui-{opentui_patch_version}.py"
     if not (ROOT / patch_script).is_file():
         fail(f"missing version-locked renderer patch script: {patch_script}")
+    if patch_script not in publish:
+        fail(f"publish workflow does not guard the current renderer patch script: {patch_script}")
     for patch in (
         f"patches/opentui/v{opentui_patch_version}-file-prefix-map.patch",
         f"patches/opentui/v{opentui_patch_version}-tlsdesc-self-resolver.patch",
@@ -183,7 +188,7 @@ def main() -> int:
             fail(f"missing version-locked renderer patch: {patch}")
 
     print(
-        f"check-release-pins: OK (candidate OpenCode {version}, OpenTUI {opentui_version} "
+        f"check-release-pins: OK (OpenCode {version}, OpenTUI {opentui_version} "
         f"with Android patch set {opentui_patch_version}; "
         f"release tag {installer_tag}; osv-scanner {osv_version})"
     )
