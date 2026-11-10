@@ -137,9 +137,11 @@ jobs:
             echo "include_dir=$SYSROOT/usr/include/aarch64-linux-android"
             echo "sys_include_dir=$SYSROOT/usr/include"
             echo "crt_dir=$LIBDIR"
+            echo "cc_dir=$LIBDIR"
+            echo "gcc_dir=$LIBDIR"
             echo "msvc_lib_dir="
             echo "kernel32_lib_dir="
-            echo "gcc_dir="
+            echo "darwin_sdk_dir="
           } > work/android-libc.txt
           sh work/opentui/packages/native/scripts/prepare-zig-deps.sh
           (
