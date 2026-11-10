@@ -54,6 +54,16 @@ def main() -> int:
     if (b.graph.environ_map.get("BIONIC_SYS_INCLUDE")) |path| {
         step.addSystemIncludePath(.{ .cwd_relative = path });
     }
+    // Zig 0.17's translate-c recognizes only `--target=` when it decides
+    // whether to prepend native libc/system include paths. The build system
+    // passes `-target <triple>`, which Aro honors for codegen but translate-c
+    // ignores for that decision, so it falls back to the host glibc headers
+    // and they shadow the NDK sysroot. Restate the resolved target in the
+    // form translate-c understands; Aro accepts `--target=` as well.
+    if (step.target.result.abi.isAndroid()) {
+        const triple = step.target.query.zigTriple(b.allocator) catch @panic("OOM");
+        step.addCFlags(&.{b.fmt("--target={s}", .{triple})});
+    }
     // Nullability is type metadata only. Zig translate-c rejects the NDK's
     // annotated array parameters, so erase these annotations for translation.
     step.defineCMacroRaw("_Nullable=");
@@ -172,6 +182,7 @@ fn addTranslatedCImports(
     required = (
         (build, 'b.graph.environ_map.get("BIONIC_LIB_DIR")'),
         (build, "addBionicTranslateIncludes(b, header);"),
+        (build, 'step.target.query.zigTriple(b.allocator)'),
         (clipboard_host, "pthread_tryjoin_np(thread.getHandle(), null)"),
     )
     for path, marker in required:
