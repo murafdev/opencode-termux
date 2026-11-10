@@ -43,6 +43,18 @@ def main() -> int:
     if not all(path.is_file() for path in (buffer, clipboard_host, build)):
         raise SystemExit("patch-opentui: expected packages/native/src source tree")
 
+    # Terminate Bionic's `#include_next <limits.h>` before it reaches the host
+    # glibc headers that Zig 0.17 translate-c appends for cross builds.
+    bionic_shim = native / "bionic-shim" / "limits.h"
+    bionic_shim.parent.mkdir(parents=True, exist_ok=True)
+    bionic_shim.write_text(
+        "/* Empty on purpose: stops Bionic's #include_next <limits.h> from\n"
+        " * reaching the host glibc header during Zig translate-c. Aro's own\n"
+        " * <limits.h> supplies the integer limits after this returns. */\n"
+        "#pragma once\n",
+        encoding="utf-8",
+    )
+
     replace_exact(
         build,
         """fn addTranslatedCImports(
@@ -53,16 +65,13 @@ def main() -> int:
     }
     if (b.graph.environ_map.get("BIONIC_SYS_INCLUDE")) |path| {
         step.addSystemIncludePath(.{ .cwd_relative = path });
-    }
-    // Zig 0.17's translate-c recognizes only `--target=` when it decides
-    // whether to prepend native libc/system include paths. The build system
-    // passes `-target <triple>`, which Aro honors for codegen but translate-c
-    // ignores for that decision, so it falls back to the host glibc headers
-    // and they shadow the NDK sysroot. Restate the resolved target in the
-    // form translate-c understands; Aro accepts `--target=` as well.
-    if (step.target.result.abi.isAndroid()) {
-        const triple = step.target.query.zigTriple(b.allocator) catch @panic("OOM");
-        step.addCFlags(&.{b.fmt("--target={s}", .{triple})});
+        // Zig 0.17's translate-c appends the host's system include paths even
+        // when Aro is translating for Android. Bionic's <limits.h> contains
+        // `#include_next <limits.h>`, which then picks up the host glibc header
+        // and fails on glibc-only macros. Terminate that chain with an empty
+        // shim; Aro's own <limits.h> is searched first and supplies the
+        // integer limits after the system header returns.
+        step.addSystemIncludePath(b.path("src/bionic-shim"));
     }
     // Nullability is type metadata only. Zig translate-c rejects the NDK's
     // annotated array parameters, so erase these annotations for translation.
@@ -182,7 +191,8 @@ fn addTranslatedCImports(
     required = (
         (build, 'b.graph.environ_map.get("BIONIC_LIB_DIR")'),
         (build, "addBionicTranslateIncludes(b, header);"),
-        (build, 'step.target.query.zigTriple(b.allocator)'),
+        (build, 'step.addSystemIncludePath(b.path("src/bionic-shim"));'),
+        (bionic_shim, "#pragma once"),
         (clipboard_host, "pthread_tryjoin_np(thread.getHandle(), null)"),
     )
     for path, marker in required:
