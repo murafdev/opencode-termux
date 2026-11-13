@@ -6,14 +6,14 @@ to upstream OpenCode. They are not applied by the Termux build; the build runs
 `docs/upstream-opencode-guards.md`).
 
 Generated from `github.com/anomalyco/opencode` at commit
-`fedc6f208aa2bd54c1019227214568083f6380ad` (OpenCode 2.2.7). The anchors are
-unchanged from `9bbb8ce18c80f099e0e448775f59d965ead40a21` (2.2.5),
+`a6b15d33daf6ab7d35569f6d711fdb630b9f04e7` (OpenCode 2.3.0). The anchors are
+unchanged from `fedc6f208aa2bd54c1019227214568083f6380ad` (2.2.7),
+`9bbb8ce18c80f099e0e448775f59d965ead40a21` (2.2.5),
 `098aa7fd6e02b03d6fc410f0b052038c7d4c5e81` (2.2.2),
 `1097e2668b1e08ad63bdf0b1c4860b9bc01e420c` (2.2.0), and
 `68bc26b7da1990ce10ffecfbc1e09eb13aa5d824` (2.1.4), so the same patcher covers
-all five releases. These exported diffs target 2.2.7; the frontmatter and
-instruction patches are byte-identical to the 2.2.5 exports, and the config
-patch differs only in its hunk line offset.
+all six releases. These exported diffs target 2.3.0 and are byte-identical to
+the 2.2.7 exports.
 
 | Patch | Target | Advisory |
 |---|---|---|

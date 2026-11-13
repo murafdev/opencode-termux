@@ -20,7 +20,7 @@ These are the entries in `security/osv-baseline.json`. All are critical/high.
 |---|---|---|---|---|
 | `zod@3.25.76` | GHSA-mrhx-c7xc-m3w5 (HIGH) | 4.6.6 | `gitlab-ai-provider@6.23.1`: `^3.25.76` | Major-version gap: the provider does not accept zod 4 yet. Reachable in principle by schema validation of an oversized constrained collection; no such input path is known. |
 
-The 2.2.7 lockfile keeps the nine other suppressions cleared that 2.2.2
+The 2.3.0 lockfile keeps the nine other suppressions cleared that 2.2.2
 resolved: `seroval`, both `brace-expansion` copies, `http-cache-semantics`,
 `js-yaml`, both `undici` copies, and the workspace/MCP `zod` copies still
 resolve to fixed releases. The fix column is the release that removes the
@@ -28,7 +28,7 @@ advisory.
 
 ## Below-threshold advisories (6 entries, 2 advisories)
 
-The 2.2.7 production closure has six moderate findings in scope, all below the
+The 2.3.0 production closure has six moderate findings in scope, all below the
 critical/high gate. They are listed here so a future lockfile refresh does not
 silently carry them forward.
 
