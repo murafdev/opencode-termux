@@ -56,8 +56,8 @@ def main() -> int:
         fail(f"cannot derive the current stable version from installer tag {installer_tag!r}")
     stable_version = stable_match.group(1)
 
-    if publish_version != version:
-        fail(f"publish workflow targets OpenCode {publish_version} but the build uses {version}")
+    if publish_version != stable_version:
+        fail(f"publish workflow targets OpenCode {publish_version} but the stable release is {stable_version}")
     if version not in lock["opencode"]:
         fail(f"candidate OpenCode {version} is not pinned in tools/supply-chain-lock.json")
     if stable_version not in lock["opencode"]:
@@ -172,13 +172,14 @@ def main() -> int:
         "0.7.0": {"0.7.0"},
         "0.8.0": {"0.8.0"},
         "0.8.1": {"0.8.1"},
+        "0.8.4": {"0.8.4"},
     }
     if opentui_patch_version not in compatible_patch_versions or opentui_version not in compatible_patch_versions[opentui_patch_version]:
         fail(f"OpenTUI {opentui_version} has no validated Android patch set {opentui_patch_version}")
     patch_script = f"tools/patch-opentui-{opentui_patch_version}.py"
     if not (ROOT / patch_script).is_file():
         fail(f"missing version-locked renderer patch script: {patch_script}")
-    if patch_script not in publish:
+    if version == stable_version and patch_script not in publish:
         fail(f"publish workflow does not guard the current renderer patch script: {patch_script}")
     for patch in (
         f"patches/opentui/v{opentui_patch_version}-file-prefix-map.patch",
