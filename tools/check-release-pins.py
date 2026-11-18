@@ -68,9 +68,9 @@ def main() -> int:
         fail(f"OpenTUI {opentui_version} is not pinned in tools/supply-chain-lock.json")
     if lock["opentui"][opentui_version]["commit"] != opentui_commit:
         fail(f"OpenTUI {opentui_version} commit does not match the lock")
-    candidate_tag = re.compile(rf"v{re.escape(version)}-bun144\.\d+")
-    if not candidate_tag.fullmatch(build_release_tag):
-        fail(f"build TERMUX_RELEASE_TAG {build_release_tag!r} does not match v{version}-bun144.<n>")
+    expected_build_tag = f"v{version}"
+    if build_release_tag != expected_build_tag:
+        fail(f"build TERMUX_RELEASE_TAG {build_release_tag!r} does not match {expected_build_tag!r}")
     # The candidate may run ahead of the published stable (afce61e built
     # v2.1.4-bun144.1 while install.sh still served v2.1.3-bun144.1), but the
     # publisher must never target a tag the installer does not serve yet: that
