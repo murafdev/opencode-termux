@@ -61,7 +61,7 @@ of a third-party action. The gate itself only uses the Python standard library.
 
 [`deferred-hardening.md`](./deferred-hardening.md) records the residual risk
 behind each suppression: reachability evidence, in-range versus out-of-range
-fixes, the 16 below-threshold advisories, and the missing RELRO/BIND_NOW
+fixes, the 6 below-threshold findings, and the missing RELRO/BIND_NOW
 hardening in the Android Bun runtime. Re-evaluate it at the baseline expiry
 (`2027-01-31`) and on every upstream version pin.
 

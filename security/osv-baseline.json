@@ -12,6 +12,20 @@
       "advisories": ["GHSA-mrhx-c7xc-m3w5"],
       "reason": "Pinned transitively by gitlab-ai-provider. Fixed in zod 4.6.6, which is outside the provider's supported range; requires an upstream bump.",
       "expires": "2027-01-31"
+    },
+    {
+      "package": "picomatch",
+      "version": "2.3.2",
+      "advisories": ["GHSA-fc5q-39xc-vjpf"],
+      "reason": "No fixed picomatch release exists yet (the advisory lists last_affected 4.0.7). Pulled transitively by micromatch@4.0.8. The ReDoS requires a crafted single-branch repeated extglob pattern; project-controlled instruction globs are bounded by the config guard, and the remaining uses are file/build tooling rather than a network service. Re-evaluate when upstream ships a fixed release.",
+      "expires": "2027-01-31"
+    },
+    {
+      "package": "picomatch",
+      "version": "4.0.5",
+      "advisories": ["GHSA-fc5q-39xc-vjpf"],
+      "reason": "No fixed picomatch release exists yet (the advisory lists last_affected 4.0.7). Pulled by tinyglobby, vite, and @rollup/pluginutils. The ReDoS requires a crafted single-branch repeated extglob pattern; project-controlled instruction globs are bounded by the config guard, and the remaining uses are file/build tooling rather than a network service. Re-evaluate when upstream ships a fixed release.",
+      "expires": "2027-01-31"
     }
   ]
 }
