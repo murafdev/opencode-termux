@@ -173,6 +173,7 @@ def main() -> int:
         "0.8.0": {"0.8.0"},
         "0.8.1": {"0.8.1"},
         "0.8.4": {"0.8.4"},
+        "0.9.4": {"0.9.4"},
     }
     if opentui_patch_version not in compatible_patch_versions or opentui_version not in compatible_patch_versions[opentui_patch_version]:
         fail(f"OpenTUI {opentui_version} has no validated Android patch set {opentui_patch_version}")
