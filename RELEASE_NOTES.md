@@ -1,41 +1,42 @@
-# OpenCode 2.3.2 for Termux — Bun 1.4.4 build
+# OpenCode 2.4.1 for Termux — Bun 1.4.4 build
 
-This Termux build runs OpenCode `2.3.2` directly on Android ARM64/Bionic, without PRoot or glibc. Release tag `v2.3.2` uses the verified Android/Bionic Bun 1.4.4 runtime and Bionic OpenTUI 0.8.4 renderer while preserving the `opencode` command. Starting with this release, the tag is the plain upstream version; the Bun/OpenTUI details stay in the build metadata and asset name.
+This Termux build runs OpenCode `2.4.1` directly on Android ARM64/Bionic, without PRoot or glibc. Release tag `v2.4.1` uses the verified Android/Bionic Bun 1.4.4 runtime and Bionic OpenTUI 0.9.4 renderer while preserving the `opencode` command.
 
 Install or update in Termux:
 
 ```sh
-curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.3.2/install.sh | sh
+curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.1/install.sh | sh
 ```
 
-The installer verifies the downloaded archive and extracted binary before atomically replacing `~/.local/bin/opencode`. It retains chats, sign-ins, and configuration. The reported CLI version is `opencode v2.3.2`.
+The installer verifies the downloaded archive and extracted binary before atomically replacing `~/.local/bin/opencode`. It retains chats, sign-ins, and configuration. The reported CLI version is `opencode v2.4.1`.
 
 ## What changed
 
-- OpenCode updated to `2.3.2` from pinned upstream commit `c0ad18b402eb2827fc1ee71c171b1177b3fc02d1`; this includes the `2.3.1` changes. The pinned Bun source toolchain remains `1.4.4`.
-- Bionic OpenTUI renderer remains `0.8.4` and is built with Zig `0.17.0`. The Android hardening patches were re-verified against the 0.8.4 source: file-prefix mapping, the self-contained TLSDESC resolver, the Android 11+ heap-pointer-tagging opt-out, the scissor/rect overflow guards, and the Bionic clipboard shim. 0.8.4 keeps the i64 viewport clamp and the `drawTextFitted` text path, and adds `ot_scene_reaches_hooks`.
-- The Bionic build keeps the empty `limits.h` shim after the NDK sysroot. Zig 0.17 translate-c appends the host system include paths even for Android, so without the shim the host glibc `limits.h` shadows the NDK sysroot and breaks the renderer build.
+- OpenCode updated to `2.4.1` from pinned upstream commit `6f0514052a3c859894ad01bb14cc14dda1e44b96`; this includes the `2.4.0` changes.
+- Bionic OpenTUI renderer updated to `0.9.4`, built with Zig `0.17.1`. The Android hardening patches were re-verified against the 0.9.4 source: file-prefix mapping, the self-contained TLSDESC resolver, the Android 11+ heap-pointer-tagging opt-out, the scissor/rect overflow guards, and the Bionic clipboard shim. The Android build skips OpenTUI's static archive because its `bundle-libcxx` step cannot resolve Bionic libc; the renderer ships as `libopentui.so`.
+- The Bionic build keeps the empty `limits.h` shim after the NDK sysroot. Zig translate-c appends the host system include paths even for Android, so without the shim the host glibc `limits.h` shadows the NDK sysroot and breaks the renderer build.
 - Android/Bionic Bun runtime is `1.4.4`.
-- The release binary was built in GitHub Actions as a source-mode module graph (`bytecode: false`, 701 modules) and transplanted onto the hash-verified Android Bun 1.4.4 binary.
+- The release binary was built in GitHub Actions as a source-mode module graph (`bytecode: false`, 714 modules) and transplanted onto the hash-verified Android Bun 1.4.4 binary.
 - The native `opencode upgrade` guard points at this release's installer. `opencode uninstall --dry-run` previews removal; uninstall keeps user data.
-- Security hardening: project-controlled markdown frontmatter and `instructions` globs still have bounded parsing work (CVE-2026-84375, CVE-2026-102276 / 102277 / 102278), and config loading still isolates normalization failures so one malformed `command`, `agent`, `mcp`, or `provider` entry is logged and skipped instead of aborting config load (upstream #59684). The 2.3.2 lockfile adds two HIGH `picomatch` ReDoS advisories (GHSA-fc5q-39xc-vjpf) for which no fixed release exists yet; both are suppressed with a reachability justification and expire `2027-01-31`. The existing transitive `zod@3.25.76` suppression and the six moderate `glob`/`minimatch` findings below the gate remain tracked in `security/deferred-hardening.md`. Normal project configuration is unchanged.
+- Security hardening: project-controlled markdown frontmatter and `instructions` globs still have bounded parsing work (CVE-2026-84375, CVE-2026-102276 / 102277 / 102278), and config loading still isolates normalization failures so one malformed `command`, `agent`, `mcp`, or `provider` entry is logged and skipped instead of aborting config load (upstream #59684). The OSV gate now reports only the existing transitive `zod@3.25.76` suppression and six moderate `glob`/`minimatch` findings below the gate; the temporary picomatch suppression was removed after GHSA-fc5q-39xc-vjpf was withdrawn as not a security issue. Normal project configuration is unchanged.
 
-## Upstream 2.3.1–2.3.2 changes to know about
+## Upstream 2.4.0–2.4.1 changes to know about
 
-- **Timed-out shell commands keep running.** A shell command still running when its timeout expires now moves to the background instead of being killed, so long builds and test runs can finish and report back. The `shell_timeout_background` flag is gone, and a foreground `timeout: 0` now means the default 120 seconds.
-- **Compaction without the wait.** Background compaction is on by default, so the summary is written in the background and the next prompt does not pause for it. Set `compaction.background: false` to turn it off; a background summary that is never used still costs tokens. `experimental.background_compaction` is removed.
-- **GPT 6.2 with ChatGPT sign-in.** GPT 6.2 Sol and GPT 6.2 Astra, plus their fast variants, appear in the model picker when you sign in with ChatGPT. `2.3.2` fixes GPT-6.2 prompt caching so the system prompt is sent as a leading developer message and cached from the second step on.
-- **CLAUDE.md fallback restored.** OpenCode again reads `CLAUDE.md` in directories that have no `AGENTS.md`, and falls back to `~/.claude/CLAUDE.md` when the global `AGENTS.md` is missing. Set `OPENCODE_DISABLE_CLAUDE_CODE` or `OPENCODE_DISABLE_CLAUDE_CODE_PROMPT` to skip it.
-- **Shell and read reliability.** Finished shell commands no longer leave zombie processes under `opencode-pty`. Small text files now apply the default line and byte limits, `limit: 0` is rejected, paged reads that select a blank line return it, and emoji/multi-byte characters are no longer split in shell output, grep previews, generated titles, read lines, or shell tails.
-- **Code Mode and tools.** Code Mode gets structured `read` results, Node `Buffer`, the `search("issues")` shorthand, and 500-character tool summaries. A missing tool now returns a rejected promise, plugin tool renames apply inside Code Mode, and a program that only logs no longer prints a stray `null`.
-- **Providers and plugins.** ChatGPT/OpenAI subscription logins keep their sharing-limit and context caps across token refresh failures; Claude Agent models keep their context window when Claude Code renames a model; switching models mid-session no longer sends the wrong reasoning field. Plugin replacement recovers when cleanup of an earlier plugin fails.
-- **TUI fixes.** Permission prompts from subagents appear while viewing the subagent's session and in front of an open composer. Closing a session another TUI shares moves to the neighbouring tab. The export dialog can save to the system temp directory. Shell output no longer has broken characters at the edges. Time to first token was removed from the message footer.
-- **Experimental automations.** Experimental schedules are now automations behind the `automations` flag: a time, interval, cron, or pushed MCP event can send a prompt or run a Code Mode program. Use `/automation` or the `automation_*` tools. The old `schedules` flag still works; plain prompt schedules carry over.
-- **2.3.2 webfetch fix.** `webfetch` structured output no longer repeats the `url` and `format` it was called with.
+- **New TUI look.** The new designs are on by default, and the theme named `opencode` is the new theme. Set `opencode-classic` in **Theme** for the previous colors, or `experimental["new-designs"]: false` in the TUI config for the previous designs.
+- **TUI plugins need OpenTUI 0.9.4.** `@opencode/plugin` requires `@opentui/core` and `@opentui/solid` 0.9.4 or later. Renderers passed to `registerCodeBlockRenderer` now receive an OpenTUI block (`block.text`) instead of a Markdown token; `codeBlockStyle` and `escaped` are gone. Plugins built only for OpenTUI 0.8 or older need an update.
+- **Automations.** Ask the agent to run a prompt, Code Mode script, or fixed shell command once, on an interval, on a cron schedule, or when an MCP server pushes an event. Use `/automation` or the `automation` tools. A shell action asks for approval when created and records each run's exit code and output. Set `"automations": false` to turn them off.
+- **Video generation.** When a connected provider has a video model, the agent can create videos with `generate_video`. The job runs in the background, survives a server restart, saves finished videos into the workspace, and wakes the agent with their paths. `experimental_image_generate` was renamed to `generate_image`; old permission rules are mapped, but saved “always allow” approvals ask again once.
+- **MCP events and protocol negotiation.** OpenCode follows the MCP Events beta for push delivery, with argument checks, heartbeats, and automatic reconnects. MCP servers without a `protocol` setting try the newest protocol first and fall back to the legacy handshake; set `protocol: "legacy"` for a server that misbehaves.
+- **Plugin updates.** Plugins written as `name@latest`, a version range, a Git branch, or a Git `semver:` range are checked on startup and every 24 hours; a newer match is installed and reloaded, and a failed update keeps the previous version. Bare names, exact versions, tags, and commit hashes update only through `opencode plugin update`.
+- **GitHub Copilot auth.** Copilot no longer reads `GITHUB_TOKEN`. Use `COPILOT_GITHUB_TOKEN` or sign in with OAuth.
+- **Code Mode session paths.** `tools.opencode.session_rename` and `session_move` are now `tools.opencode.session.rename` and `.move`. Direct tool names and permission actions are unchanged.
+- **SDK plugin loading.** Plugins load in the background again; the server no longer waits up to 5 seconds and returns 503. Right after startup, model/provider/`generate.*`/`voice.*`/`websearch.query` endpoints may return partial data, so long-lived clients should refresh on the matching `*.updated` event and one-shot scripts should poll.
+- **TUI details.** `/login` and `/auth` open the same dialog as `/connect`, which now lists one **OpenCode** entry that includes OpenCode Go models. Pressing `↓` opens the picker on the first tab with something running. Text prompt dialogs end with a **Submit** button. The `opencode` theme's light mode uses lighter grays for the prompt box, selected tabs, and hovered rows.
+- **2.4.1 fixes.** Config-only providers such as Ollama now show their models in `/models` without a `/connect` login. A `/btw` answer that finishes behind another side-panel tab shows an unread dot. `experimental.model_speeds` exposes service tiers as remembered speeds. Compaction keeps no more than `keep.tokens` of recent history, and long goal sessions no longer incur an extra cache cost after compaction.
 
 ## Release signatures
 
-The publish workflow signs both `SHA256SUMS` and the archive with cosign keyless signing and attaches `SHA256SUMS.cosign.bundle` and `opencode-2.3.2-android-aarch64-source-bun144-sourcegraph.tar.gz.cosign.bundle`. `install.sh` verifies them when `cosign` is installed; `OPENCODE_REQUIRE_SIGNATURE=1` makes an absent or invalid signature fatal. To verify manually:
+The publish workflow signs both `SHA256SUMS` and the archive with cosign keyless signing and attaches `SHA256SUMS.cosign.bundle` and `opencode-2.4.1-android-aarch64-source-bun144-sourcegraph.tar.gz.cosign.bundle`. `install.sh` verifies them when `cosign` is installed; `OPENCODE_REQUIRE_SIGNATURE=1` makes an absent or invalid signature fatal. To verify manually:
 
 ```sh
 cosign verify-blob \
@@ -50,7 +51,13 @@ The signature binds the artifacts to the release workflow and records them in th
 
 ## Rollback to the previous builds
 
-The previous OpenCode 2.3.0 release remains available:
+The previous OpenCode 2.3.2 release remains available:
+
+```sh
+curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.3.2/install.sh | sh
+```
+
+The 2.3.0 release also remains available:
 
 ```sh
 curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.3.0-bun144.1/install.sh | sh
@@ -102,8 +109,8 @@ The v2.1.2 release is also retained. Back up OpenCode data before downgrading if
 
 ## Provenance and testing
 
-This release is published from a successful GitHub Actions artifact, not from a phone-side build. Candidate run `44289708544` was built at commit `64d5d0757f5b8fec7dc6ee6c5fdbffe6dfaae0c4`. The run ID, OpenCode commit, and pinned runtime inputs are recorded in the attached `build-variant.json`, `supply-chain-lock.json`, and `transplant-report.json`; `SHA256SUMS` carries the binary digest. The artifact is 202,842,488 bytes with SHA-256 `e1956c93b827cffe5cccbc19787b7e51a3228c8d70052932d43a970f323455e9`.
+This release is published from a successful GitHub Actions artifact, not from a phone-side build. Candidate run `45359112921` was built at commit `e2efc67e7959abd5350d3fb1ce770c60a024ee46`. The run ID, OpenCode commit, and pinned runtime inputs are recorded in the attached `build-variant.json`, `supply-chain-lock.json`, and `transplant-report.json`; `SHA256SUMS` carries the binary digest. The artifact is 216,342,904 bytes with SHA-256 `ab39b9c4131ab5664fe1ef12df19f181d1509d455ab20e19bee4cd5adb725d1c`.
 
-The artifact is an aarch64 PIE ELF with `/system/bin/linker64`. CI verified the embedded Bionic OpenTUI 0.8.4 renderer's `libc.so` linkage, the FFI negative-coordinate guard, and the 701-module graph; the Linux unit suite passed after the security baseline update. Artifact review also confirmed the embedded `libopentui.so` is 4,620,328 bytes with SONAME `libopentui.so`, Bionic-only `NEEDED` entries, 270 exported `ot_*` symbols, and no glibc-only `pthread_tryjoin_np` import. The Linux CI runner skipped its runtime TUI probe because it is not AArch64.
+The artifact is an aarch64 PIE ELF with `/system/bin/linker64`. CI verified the embedded Bionic OpenTUI 0.9.4 renderer's `libc.so` linkage, the FFI negative-coordinate guard, and the 714-module graph; the Linux unit suite passed after the security baseline cleanup. Artifact review also confirmed the embedded `libopentui.so` is 4,881,928 bytes with SONAME `libopentui.so`, Bionic-only `NEEDED` entries, 292 exported `ot_*` symbols, and no glibc-only `pthread_tryjoin_np` import. The Linux CI runner skipped its runtime TUI probe because it is not AArch64.
 
-On device, the exact artifact passed the SHA-256 check, `--version` reported `opencode v2.3.2`, the interactive TUI started, and `/q` exited cleanly. These results are single-device validation, not a claim of multi-device coverage; please report device-specific problems.
+On device, the exact artifact passed the SHA-256 check, `--version` reported `opencode v2.4.1`, the interactive TUI started, and `/q` exited cleanly. These results are single-device validation, not a claim of multi-device coverage; please report device-specific problems.
