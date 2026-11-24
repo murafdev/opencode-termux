@@ -12,26 +12,24 @@ are "in range, needs a lockfile refresh" rather than "blocked".
 Baseline expiry: **2027-01-31**. Re-evaluate on every upstream version pin as
 well as at expiry.
 
-## Gated advisories under suppression (3 entries, 2 advisories)
+## Gated advisories under suppression (1 entry, 1 advisory)
 
 These are the entries in `security/osv-baseline.json`. All are critical/high.
 
 | Package | Advisory | Fix | Holder | Why deferred |
 |---|---|---|---|---|
 | `zod@3.25.76` | GHSA-mrhx-c7xc-m3w5 (HIGH) | 4.6.6 | `gitlab-ai-provider@6.23.1`: `^3.25.76` | Major-version gap: the provider does not accept zod 4 yet. Reachable in principle by schema validation of an oversized constrained collection; no such input path is known. |
-| `picomatch@2.3.2` | GHSA-fc5q-39xc-vjpf (HIGH) | none yet | `micromatch@4.0.8`: `^2.3.1` | No fixed picomatch release exists yet (the advisory lists `last_affected` 4.0.7). The ReDoS requires a crafted single-branch repeated extglob pattern; project-controlled instruction globs are bounded by the config guard, and the remaining uses are file/build tooling rather than a network service. |
-| `picomatch@4.0.5` | GHSA-fc5q-39xc-vjpf (HIGH) | none yet | `tinyglobby`, `vite`, `@rollup/pluginutils` | Same advisory and same bounded input path. No fixed picomatch release exists yet. |
 
-The 2.3.2 lockfile keeps the nine other suppressions cleared that 2.2.2
+The 2.4.1 lockfile keeps the nine other suppressions cleared that 2.2.2
 resolved: `seroval`, both `brace-expansion` copies, `http-cache-semantics`,
 `js-yaml`, both `undici` copies, and the workspace/MCP `zod` copies still
-resolve to fixed releases. The two picomatch entries are new for the 2.3.2
-pin because the advisory has no fixed release; re-evaluate when upstream ships
-one. The fix column is the release that removes the advisory.
+resolve to fixed releases. The fix column is the release that removes the
+advisory. The two picomatch suppressions added for 2.3.2 were removed after
+GHSA-fc5q-39xc-vjpf was withdrawn on 2026-11-18.
 
 ## Below-threshold advisories (6 entries, 2 advisories)
 
-The 2.3.2 production closure has six moderate findings in scope, all below the
+The 2.4.1 production closure has six moderate findings in scope, all below the
 critical/high gate. They are listed here so a future lockfile refresh does not
 silently carry them forward.
 
