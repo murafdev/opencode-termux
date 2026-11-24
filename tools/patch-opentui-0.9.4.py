@@ -117,6 +117,19 @@ fn addTranslatedCImports(
     addBionicTranslateIncludes(b, header);
     module.addImport("context_abi_c", header.createModule());""",
     )
+    # Android only ships the shared library. The static archive's
+    # bundle-libcxx step invokes a nested `zig build-lib` that cannot resolve
+    # Bionic libc, and the renderer does not use libopentui.a.
+    replace_exact(
+        build,
+        """    for (createLibraries(b, target, optimize, build_options, macos_sdk_path)) |lib| {
+        const windows = target.result.os.tag == .windows;
+        if (lib.isStaticLibrary() and (windows or target.result.os.tag == .linux)) {""",
+        """    for (createLibraries(b, target, optimize, build_options, macos_sdk_path)) |lib| {
+        const windows = target.result.os.tag == .windows;
+        if (lib.isStaticLibrary() and target.result.abi.isAndroid()) continue;
+        if (lib.isStaticLibrary() and (windows or target.result.os.tag == .linux)) {""",
+    )
     replace_exact(
         build,
         """        .linux => {
