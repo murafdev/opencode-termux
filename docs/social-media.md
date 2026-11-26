@@ -1,4 +1,4 @@
-# Social media pack — OpenCode 2.4.1 for Termux
+# Social media pack — OpenCode 2.4.2 for Termux
 
 Copy for announcing the native Termux build. Every claim here is traceable to
 `README.md` and `RELEASE_NOTES.md`; see [Claim guardrails](#claim-guardrails)
@@ -8,19 +8,19 @@ before editing.
 body, not only in a reply, bio, or alt text. If you cut a post down, cut a
 feature line before you cut the credit line.
 
-**Before posting:** all copy pins `v2.4.1`. If a newer release exists,
+**Before posting:** all copy pins `v2.4.2`. If a newer release exists,
 update that tag everywhere (search for it) and re-check the install command.
 
 **Canonical links**
 
 - This fork: <https://github.com/murafdev/opencode-termux>
-- Release: <https://github.com/murafdev/opencode-termux/releases/tag/v2.4.1>
+- Release: <https://github.com/murafdev/opencode-termux/releases/tag/v2.4.2>
 - Parent project: <https://github.com/Spectra010s/opencode-termux>
 - Original Termux port: <https://github.com/Hope2333/opencode-termux>
 - Upstream OpenCode: <https://github.com/anomalyco/opencode>
 - Install:
   ```sh
-  curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.1/install.sh | sh
+  curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.2/install.sh | sh
   ```
 
 ---
@@ -48,13 +48,13 @@ update that tag everywhere (search for it) and re-check the install command.
 
 ## 1. X / Twitter — single post
 
-> OpenCode 2.4.1, native in Termux.
+> OpenCode 2.4.2, native in Termux.
 >
 > No PRoot. No glibc. No Node.js.
 >
 > One Android/aarch64 Bionic binary (~215 MB). Checksums + Sigstore.
 >
-> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.1/install.sh | sh
+> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.2/install.sh | sh
 >
 > Fork of Spectra010s/opencode-termux via Hope2333/opencode-termux. Upstream: anomalyco/opencode.
 
@@ -67,7 +67,7 @@ be copied, not clicked. The credit line is part of the post, not a reply.
 
 **1/**
 
-> OpenCode 2.4.1 is running natively on Android.
+> OpenCode 2.4.2 is running natively on Android.
 >
 > No PRoot. No glibc. No Node.js. Just a single Bionic ELF for aarch64.
 >
@@ -87,7 +87,7 @@ be copied, not clicked. The credit line is part of the post, not a reply.
 
 > Install in Termux:
 >
-> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.1/install.sh | sh
+> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.2/install.sh | sh
 >
 > Needs Android 9 (API 28)+ on aarch64, and about 500 MB free during install. No root, no storage permission, no shell rc edits.
 
@@ -126,11 +126,11 @@ be copied, not clicked. The credit line is part of the post, not a reply.
 
 ## 3. Mastodon
 
-> OpenCode 2.4.1 now runs natively in #Termux.
+> OpenCode 2.4.2 now runs natively in #Termux.
 >
 > No PRoot, no glibc, no Node.js — a single Android/aarch64 Bionic binary (~215 MB), built in CI from pinned inputs and signed with keyless Sigstore.
 >
-> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.1/install.sh | sh
+> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.2/install.sh | sh
 >
 > Android 9+ (API 28), aarch64. Validated on one device so far; reports welcome.
 >
@@ -146,12 +146,12 @@ Under the default 500-character limit.
 
 **Title**
 
-> OpenCode 2.4.1 as a native Bionic binary for Termux (no PRoot, no glibc, no Node)
+> OpenCode 2.4.2 as a native Bionic binary for Termux (no PRoot, no glibc, no Node)
 
 **Body**
 
 > I maintain the fork builds of OpenCode 2 for Termux. The current release runs
-> 2.4.1 directly on Android's Bionic libc as a single aarch64 ELF — no PRoot, no
+> 2.4.2 directly on Android's Bionic libc as a single aarch64 ELF — no PRoot, no
 > glibc, no Node.js or npm.
 >
 > **Credit where it is due:** this is a fork of Spectra010s/opencode-termux,
@@ -162,7 +162,7 @@ Under the default 500-character limit.
 > **Install**
 >
 > ```sh
-> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.1/install.sh | sh
+> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.2/install.sh | sh
 > ```
 >
 > Requires Android 9 (API 28)+ on aarch64. Allow about 500 MB free during
@@ -197,11 +197,11 @@ Under the default 500-character limit.
 >
 > **Rollback**
 >
-> The 2.3.2, 2.3.0, 2.2.7, 2.2.5, 2.2.2, 2.2.0, 2.1.4, and both 2.1.3 builds
-> remain available, and the README documents how to return to them.
+> The 2.4.1, 2.3.2, 2.3.0, 2.2.7, 2.2.5, 2.2.2, 2.2.0, 2.1.4, and both 2.1.3
+> builds remain available, and the README documents how to return to them.
 >
 > Repo: https://github.com/murafdev/opencode-termux
-> Release: https://github.com/murafdev/opencode-termux/releases/tag/v2.4.1
+> Release: https://github.com/murafdev/opencode-termux/releases/tag/v2.4.2
 
 ---
 
@@ -209,23 +209,24 @@ Under the default 500-character limit.
 
 **Title**
 
-> Show HN: OpenCode 2.4.1 as a native Bionic binary for Termux
+> Show HN: OpenCode 2.4.2 as a native Bionic binary for Termux
 
 **Text**
 
 > I have been maintaining the fork builds of OpenCode 2 for Termux. The latest
-> release runs 2.4.1 on Android/aarch64 as a native Bionic binary — no PRoot, no
+> release runs 2.4.2 on Android/aarch64 as a native Bionic binary — no PRoot, no
 > glibc, no Node.js.
 >
 > It is produced by transplanting the OpenCode source module graph onto a
-> hash-verified Android Bun 1.4.4 binary, then patching OpenTUI 0.9.4 for two
+> hash-verified Android Bun 1.4.4 binary, then patching OpenTUI 0.9.9 for two
 > Android issues: top-byte heap pointer tagging on Android 11+, which made the
 > TUI abort with "Pointer exceeds safe integer range", and the Google Play
-> Termux `linker64` exec path. OpenCode 2.4.1 also ships the new TUI designs,
+> Termux `linker64` exec path. OpenCode 2.4.2 also ships the new TUI designs,
 > runs subagents and compaction in the background, summarizes tool runs into
 > collapsible activity rows by default, adds automations and video generation,
 > and moves timed-out shell commands to the background instead of killing them.
-> TUI plugins now need OpenTUI 0.9.4.
+> TUI plugins now need OpenTUI 0.9.4 or later. 2.4.2 also adds a GPT-6.2
+> system prompt and lets Esc put an unstarted last message back in the composer.
 >
 > Releases are built in GitHub Actions from pinned inputs and published with
 > `SHA256SUMS` plus keyless Sigstore bundles. The installer verifies checksums
@@ -241,7 +242,7 @@ Under the default 500-character limit.
 > useful.
 >
 > ```sh
-> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.1/install.sh | sh
+> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.2/install.sh | sh
 > ```
 >
 > Code and build docs: https://github.com/murafdev/opencode-termux
@@ -255,21 +256,22 @@ Post Tuesday–Thursday morning US time. Do not ask for votes.
 > Running a full AI coding agent on a phone usually means stacking a Linux
 > userland on top of Android: PRoot, glibc, a distro, and a lot of patience.
 >
-> This release takes a different route. OpenCode 2.4.1 runs as a single native
+> This release takes a different route. OpenCode 2.4.2 runs as a single native
 > Android/aarch64 Bionic binary in Termux — no PRoot, no glibc, no Node.js.
 >
 > What is inside:
 >
-> • OpenCode 2.4.1 on Android/Bionic Bun 1.4.4 with OpenTUI 0.9.4
-> • New TUI look; TUI plugins need OpenTUI 0.9.4
+> • OpenCode 2.4.2 on Android/Bionic Bun 1.4.4 with OpenTUI 0.9.9
+> • New TUI look; TUI plugins need OpenTUI 0.9.4+
 > • Background subagents, quieter transcripts, and background compaction
 > • Automations, video generation, and timed-out shell commands that keep running
+> • GPT-6.2 system prompt; Esc restores an unstarted last message
 > • CI-built from pinned inputs, with checksums and keyless Sigstore signing
 > • Android 11+ pointer-tagging fix and Google Play Termux startup fix
 > • One-command install, about 215 MB installed
 >
 > ```sh
-> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.1/install.sh | sh
+> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.2/install.sh | sh
 > ```
 >
 > **Credits:** this is a fork of Spectra010s/opencode-termux, derived from
@@ -287,12 +289,12 @@ Post Tuesday–Thursday morning US time. Do not ask for votes.
 
 ## 7. Telegram / Discord
 
-> **OpenCode 2.4.1 — native Termux build (fork)**
+> **OpenCode 2.4.2 — native Termux build (fork)**
 >
 > No PRoot, no glibc, no Node.js. Single Android/aarch64 Bionic binary.
 >
 > ```sh
-> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.1/install.sh | sh
+> curl -fsSL https://github.com/murafdev/opencode-termux/raw/v2.4.2/install.sh | sh
 > ```
 >
 > Android 9+ · ~215 MB installed · checksums always, Sigstore when `cosign` is present
@@ -310,7 +312,7 @@ Post Tuesday–Thursday morning US time. Do not ask for votes.
 | Time | Visual | Voiceover | On-screen text |
 |---|---|---|---|
 | 0:00–0:03 | Phone in hand, Termux open | "This is a full AI coding agent running on a phone. Natively." | "No PRoot. No glibc." |
-| 0:03–0:10 | `opencode --version` → `2.4.1` | "OpenCode 2.4.1, on Android, as a single Bionic binary." | "OpenCode 2.4.1 · Android/aarch64" |
+| 0:03–0:10 | `opencode --version` → `2.4.2` | "OpenCode 2.4.2, on Android, as a single Bionic binary." | "OpenCode 2.4.2 · Android/aarch64" |
 | 0:10–0:18 | `file ~/.local/bin/opencode` | "No PRoot. No glibc. No Node. It links straight to Android's libc." | "Bionic ELF · ~215 MB" |
 | 0:18–0:26 | Paste install command, show checksum lines | "One command installs it. The installer verifies the archive and the binary before replacing anything." | "checksums + optional Sigstore" |
 | 0:26–0:34 | TUI, send a prompt, response streams | "Then it is just OpenCode: sessions, tools, your project." | "opencode" |
@@ -321,9 +323,9 @@ Post Tuesday–Thursday morning US time. Do not ask for votes.
 
 ## 9. Alt text for a TUI screenshot
 
-> Termux terminal on Android showing the OpenCode 2.4.1 TUI: a chat pane with a
+> Termux terminal on Android showing the OpenCode 2.4.2 TUI: a chat pane with a
 > coding prompt and a file tree, with `opencode --version` above it returning
-> `2.4.1`.
+> `2.4.2`.
 
 ---
 

@@ -1,16 +1,16 @@
 # PROJECT KNOWLEDGE BASE
 
-## ACTIVE NATIVE V2 WORK (2026-11-24)
+## ACTIVE NATIVE V2 WORK (2026-11-26)
 
-- Native Android/OpenCode v2 `2.4.1` (Bun 1.4.4, OpenTUI 0.9.4, Zig 0.17.1) is the current user-facing release. Branch `native-android` is the release line. Release tags from 2.3.2 onward are the plain upstream version (`v2.4.1`); Bun/OpenTUI details stay in the asset name and build metadata.
+- Native Android/OpenCode v2 `2.4.2` (Bun 1.4.4, OpenTUI 0.9.9, Zig 0.17.1) is the current user-facing release. Branch `native-android` is the release line. Release tags from 2.3.2 onward are the plain upstream version (`v2.4.2`); Bun/OpenTUI details stay in the asset name and build metadata.
 - Current user-facing path: `README.md` and `install.sh` installing `~/.local/bin/opencode`. Current build path: `docs/native-v2-build.md` and the native Android workflows.
 - Release builds run in GitHub Actions for reproducibility. On-device local builds are allowed; Termux already is Bionic so no NDK. Needs Termux `python3`, `npm`, `clang`, `make` (`zig` only to rebuild OpenTUI), network, and pinned inputs in `tools/supply-chain-lock.json`. Guide: `docs/transplant.md` + `make transplant VER=2.0.26`.
-- Source/Bun 1.4.4 release candidate from Actions run 45359112921 passed on-device checksum, `--version`, TUI startup, and clean exit. Publish from a verified CI artifact only; never upload the phone's local copy.
-- OpenTUI 0.9.4 requires Zig 0.17.1. Zig translate-c appends the host system include paths even for Android, so the Bionic build adds an empty `limits.h` shim after the NDK sysroot; without it, the host glibc `limits.h` shadows Bionic and the renderer build fails. The Android build skips OpenTUI's static archive because its `bundle-libcxx` step cannot resolve Bionic libc; only `libopentui.so` is shipped.
+- Source/Bun 1.4.4 release candidate from Actions run 45766913004 passed on-device checksum, `--version`, TUI startup, and clean exit. Publish from a verified CI artifact only; never upload the phone's local copy.
+- OpenTUI 0.9.9 requires Zig 0.17.1. Zig translate-c appends the host system include paths even for Android, so the Bionic build adds an empty `limits.h` shim after the NDK sysroot; without it, the host glibc `limits.h` shadows Bionic and the renderer build fails. The Android build skips OpenTUI's static archive because its `bundle-libcxx` step cannot resolve Bionic libc; only `libopentui.so` is shipped.
 - Keep third-party Actions pinned to immutable commit SHAs. Use v6 action lines when available; do not downgrade to v4.
 - Do not replace the manual repository fetch with `actions/checkout` until the malformed upstream `termux-packages` gitlink/submodule metadata is repaired.
 
-**Generated:** 2026-11-24 · **Branch:** native-android
+**Generated:** 2026-11-26 · **Branch:** native-android
 
 ## OVERVIEW
 Termux-first OpenCode build/packaging workspace. Stable mainline since 27/28 is the native bionic line: a single zero-glibc Android ELF produced by the transplant revive pipeline (`tools/transplant/`, `make transplant`; see `docs/transplant.md`). The wrapper line is renamed `opencode-wrapper` and demoted to appendix maintenance (local build path `tools/produce-local.sh` + `scripts/*`); `opencode-wrapper-standalone` is the frozen single-version rollback package that can coexist with `opencode`. `opencode` and `opencode-wrapper` remain mutually exclusive. GitHub Actions builds the native release artifact; publish only from a validated CI artifact, never from a phone-built copy.

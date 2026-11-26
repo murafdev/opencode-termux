@@ -6,17 +6,17 @@ to upstream OpenCode. They are not applied by the Termux build; the build runs
 `docs/upstream-opencode-guards.md`).
 
 Generated from `github.com/anomalyco/opencode` at commit
-`6f0514052a3c859894ad01bb14cc14dda1e44b96` (OpenCode 2.4.1). The anchors are
-unchanged from `c0ad18b402eb2827fc1ee71c171b1177b3fc02d1` (2.3.2),
+`fc31a485317970bcf6be7b431a9830aaef875731` (OpenCode 2.4.2). The anchors are
+unchanged from `6f0514052a3c859894ad01bb14cc14dda1e44b96` (2.4.1),
+`c0ad18b402eb2827fc1ee71c171b1177b3fc02d1` (2.3.2),
 `a6b15d33daf6ab7d35569f6d711fdb630b9f04e7` (2.3.0),
 `fedc6f208aa2bd54c1019227214568083f6380ad` (2.2.7),
 `9bbb8ce18c80f099e0e448775f59d965ead40a21` (2.2.5),
 `098aa7fd6e02b03d6fc410f0b052038c7d4c5e81` (2.2.2),
 `1097e2668b1e08ad63bdf0b1c4860b9bc01e420c` (2.2.0), and
 `68bc26b7da1990ce10ffecfbc1e09eb13aa5d824` (2.1.4), so the same patcher covers
-all eight releases. These exported diffs target 2.4.1; the frontmatter and
-instruction patches are byte-identical to the 2.3.2 exports, and the config
-patch differs in hunk context and line offset.
+all nine releases. These exported diffs target 2.4.2 and are byte-identical to
+the 2.4.1 exports.
 
 | Patch | Target | Advisory |
 |---|---|---|
